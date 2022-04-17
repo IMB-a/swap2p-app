@@ -1,37 +1,48 @@
-import { Avatar, Button, Card, CardActions, CardContent, Container, Stack, Typography } from '@mui/material'
-import { useMetaMask } from 'metamask-react'
+import React, { useEffect } from 'react';
 import type { NextPage } from 'next'
 import Head from 'next/head'
+import { Avatar, Button, Card, CardActions, CardContent, CircularProgress, Container, Stack, Typography } from '@mui/material'
+import { useMetaMask } from 'metamask-react'
 
-const assets_init: JSX.Element[] = [];
 const assets_connected: JSX.Element[] = [
-  <Card sx={{ display: 'flex', flexDirection: 'row' }}>
-    <Avatar>ETH</Avatar>
-    <CardContent sx={{ display: 'flex', flexDirection: 'row' }}>
-      <Typography>ETH</Typography>
-      <Typography>Ethereum</Typography>
-      <Typography>3000 $</Typography>
+  {
+    shortName: 'ETH',
+    displayName: 'Ethereum',
+    price: 3000.0,
+    count: 0.0,
+  },
+  {
+    shortName: 'KAL',
+    displayName: 'Kal Token',
+    price: 0.0,
+    count: 100.0,
+  },
+].map((item, index) => (
+  <Card id={`assets_${index}`} sx={{ display: 'grid' }}>
+    <Avatar>{item.shortName}</Avatar>
+    <CardContent sx={{ display: 'grid' }}>
+      <Typography>{item.shortName}</Typography>
+      <Typography>{item.displayName}</Typography>
+      <Typography>{item.price} $</Typography>
+      <Typography>{item.count}</Typography>
     </CardContent>
-  </Card>,
-  <Card sx={{ display: 'flex', flexDirection: 'row' }}>
-    <Avatar>ETH</Avatar>
-    <CardContent sx={{ display: 'flex', flexDirection: 'row' }}>
-      <Typography>ETH</Typography>
-      <Typography>Ethereum</Typography>
-      <Typography>3000 $</Typography>
-    </CardContent>
-  </Card>,
-];
+  </Card>
+));
 
 const Home: NextPage = () => {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
-  let assets = assets_init;
+  // const assets = status === 'connected' ? assets_connected : [];
+  const [assets, setAssets] = React.useState([] as JSX.Element[]);
 
-  const connectMetamask = async (): Promise<void> => {
-    const strings = await connect();
-    assets = assets_connected;
-  };
+  React.useEffect(() => {
+    if (status === 'connected') {
+      setAssets([<CircularProgress />]);
+      const timeout = setTimeout(() => { setAssets(assets_connected) }, 10000);
+      return () => clearTimeout(timeout);
+    }
+    setAssets([]);
+  }, [status]);
 
   return (
     <Container>
@@ -67,7 +78,7 @@ const Home: NextPage = () => {
               </Typography>
             </CardContent>
             <CardActions>
-              <Button onClick={connectMetamask}>Connect to MetaMask</Button>
+              <Button onClick={connect}>Connect to MetaMask</Button>
             </CardActions>
           </Card>,
           'connecting': <Card sx={{ maxWidth: 360 }}>
@@ -89,7 +100,7 @@ const Home: NextPage = () => {
         }[status]
       }
 
-      <Stack>
+      <Stack display='grid'>
         {assets}
       </Stack>
     </Container>
