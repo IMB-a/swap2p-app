@@ -1,10 +1,24 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { Avatar, Button, Card, CardActions, CardContent, CircularProgress, Container, Stack, Typography } from '@mui/material'
+import { Avatar, Backdrop, Button, Card, CardActions, CardContent, CircularProgress, Container, Stack, Typography } from '@mui/material'
 import { useMetaMask } from 'metamask-react'
 
-const assets_connected: JSX.Element[] = [
+const AssetCard = ({ index, item }: { index: number, item: any }) => {
+  return(
+    <Card id={`assets_${index}`} sx={{ display: 'grid' }}>
+      <Avatar>{item.shortName}</Avatar>
+      <CardContent sx={{ display: 'grid' }}>
+        <Typography>{item.shortName}</Typography>
+        <Typography>{item.displayName}</Typography>
+        <Typography>{item.price} $</Typography>
+        <Typography>{item.count}</Typography>
+      </CardContent>
+    </Card>
+  );
+}
+
+const assets_connected: any[] = [
   {
     shortName: 'ETH',
     displayName: 'Ethereum',
@@ -17,29 +31,26 @@ const assets_connected: JSX.Element[] = [
     price: 0.0,
     count: 100.0,
   },
-].map((item, index) => (
-  <Card id={`assets_${index}`} sx={{ display: 'grid' }}>
-    <Avatar>{item.shortName}</Avatar>
-    <CardContent sx={{ display: 'grid' }}>
-      <Typography>{item.shortName}</Typography>
-      <Typography>{item.displayName}</Typography>
-      <Typography>{item.price} $</Typography>
-      <Typography>{item.count}</Typography>
-    </CardContent>
-  </Card>
-));
+];
 
 const Home: NextPage = () => {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
-  // const assets = status === 'connected' ? assets_connected : [];
+  const [openBackdrop, setOpenBackdrop] = React.useState(false);
   const [assets, setAssets] = React.useState([] as JSX.Element[]);
 
   React.useEffect(() => {
     if (status === 'connected') {
-      setAssets([<CircularProgress />]);
-      const timeout = setTimeout(() => { setAssets(assets_connected) }, 10000);
-      return () => clearTimeout(timeout);
+      setOpenBackdrop(true);
+      const timeout = setTimeout(() => {
+        setAssets(assets_connected);
+        setOpenBackdrop(false);
+      }, 1000);
+      return () => {
+        setAssets([]);
+        setOpenBackdrop(false);
+        clearTimeout(timeout);
+      };
     }
     setAssets([]);
   }, [status]);
@@ -100,8 +111,12 @@ const Home: NextPage = () => {
         }[status]
       }
 
+      <Backdrop open={openBackdrop}>
+        <CircularProgress />
+      </Backdrop>
+
       <Stack display='grid'>
-        {assets}
+        {assets.map((item, index) => <AssetCard index={index} item={item}></AssetCard>)}
       </Stack>
     </Container>
   )
