@@ -1,33 +1,23 @@
 import React from 'react';
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { Avatar, Backdrop, Button, Card, CardActions, CardContent, CircularProgress, Container, Stack, Typography } from '@mui/material'
+import { Backdrop, Button, Card, CardActions, CardContent, CircularProgress, Container, Stack, Typography } from '@mui/material'
 import { useMetaMask } from 'metamask-react'
+import { AssetCard, AssetCardData } from '../components';
+import { AssetCardTable } from '../components/AssetCardTable';
 
-const AssetCard = ({ index, item }: { index: number, item: any }) => {
-  return(
-    <Card id={`assets_${index}`} sx={{ display: 'grid' }}>
-      <Avatar>{item.shortName}</Avatar>
-      <CardContent sx={{ display: 'grid' }}>
-        <Typography>{item.shortName}</Typography>
-        <Typography>{item.displayName}</Typography>
-        <Typography>{item.price} $</Typography>
-        <Typography>{item.count}</Typography>
-      </CardContent>
-    </Card>
-  );
-}
-
-const assets_connected: any[] = [
+const assets_connected: AssetCardData[] = [
   {
     shortName: 'ETH',
     displayName: 'Ethereum',
+    network: 'Ethereum',
     price: 3000.0,
     count: 0.0,
   },
   {
     shortName: 'KAL',
     displayName: 'Kal Token',
+    network: 'Rinkeby',
     price: 0.0,
     count: 100.0,
   },
@@ -37,7 +27,7 @@ const Home: NextPage = () => {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
   const [openBackdrop, setOpenBackdrop] = React.useState(false);
-  const [assets, setAssets] = React.useState([] as JSX.Element[]);
+  const [assets, setAssets] = React.useState([] as AssetCardData[]);
 
   React.useEffect(() => {
     if (status === 'connected') {
@@ -115,9 +105,7 @@ const Home: NextPage = () => {
         <CircularProgress />
       </Backdrop>
 
-      <Stack display='grid'>
-        {assets.map((item, index) => <AssetCard index={index} item={item}></AssetCard>)}
-      </Stack>
+      <AssetCardTable assets={assets} />
     </Container>
   )
 }
