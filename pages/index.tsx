@@ -3,8 +3,9 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { Backdrop, Button, Card, CardActions, CardContent, CircularProgress, Container, Stack, Typography } from '@mui/material'
 import { useMetaMask } from 'metamask-react'
-import { AssetCard, AssetCardData } from '../components';
+import { AssetCardData } from '../components';
 import { AssetCardTable } from '../components/AssetCardTable';
+import MetamaskConnectCard from '../components/MetamaskConnectCard';
 
 const assets_connected: AssetCardData[] = [
   {
@@ -43,7 +44,7 @@ const Home: NextPage = () => {
       };
     }
     setAssets([]);
-  }, [status]);
+  }, [status, chainId]);
 
   return (
     <Container>
@@ -53,53 +54,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {
-        {
-          'initializing': <Card sx={{ maxWidth: 360 }}>
-            <CardContent>
-              <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
-              <Typography variant='body2' color='text.secondary'>
-                Synchronization with MetaMask ongoing...
-              </Typography>
-            </CardContent>
-          </Card>,
-          'unavailable': <Card sx={{ maxWidth: 360 }}>
-            <CardContent>
-              <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
-              <Typography variant='body2' color='text.secondary'>
-                MetaMask not available :(
-              </Typography>
-            </CardContent>
-          </Card>,
-          'notConnected': <Card sx={{ maxWidth: 360 }}>
-            <CardContent>
-              <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
-              <Typography variant='body2' color='text.secondary'>
-                Not connected
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Button onClick={connect}>Connect to MetaMask</Button>
-            </CardActions>
-          </Card>,
-          'connecting': <Card sx={{ maxWidth: 360 }}>
-            <CardContent>
-              <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
-              <Typography variant='body2' color='text.secondary'>
-                Connecting...
-              </Typography>
-            </CardContent>
-          </Card>,
-          'connected': <Card sx={{ maxWidth: 360 }}>
-            <CardContent>
-              <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
-              <Typography variant='body2' color='text.secondary'>
-                Connected account {account} on chain ID {chainId}
-              </Typography>
-            </CardContent>
-          </Card>,
-        }[status]
-      }
+      <MetamaskConnectCard />
 
       <Backdrop open={openBackdrop}>
         <CircularProgress />

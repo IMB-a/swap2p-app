@@ -1,0 +1,265 @@
+[
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "escrowIndex",
+                "type": "uint256"
+            }
+        ],
+        "name": "EscrowAccepted",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "escrowIndex",
+                "type": "uint256"
+            }
+        ],
+        "name": "EscrowCanceled",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "xOwner",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "xTokenContractAddr",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "xAmount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "yOwner",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "yTokenContractAddr",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "yAmount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "escrowIndex",
+                "type": "uint256"
+            }
+        ],
+        "name": "EscrowCreated",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_escrowIndex",
+                "type": "uint256"
+            }
+        ],
+        "name": "acceptEscrow",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_escrowIndex",
+                "type": "uint256"
+            }
+        ],
+        "name": "cancelEscrow",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_xTokenContractAddr",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_xAmount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_yTokenContractAddr",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_yAmount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_yOwner",
+                "type": "address"
+            }
+        ],
+        "name": "createEscrow",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "escrowList",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "xOwner",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "xTokenContractAddr",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "xAmount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "yOwner",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "yTokenContractAddr",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "yAmount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bool",
+                "name": "closed",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_escrowIndex",
+                "type": "uint256"
+            }
+        ],
+        "name": "getEscrow",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "xOwner",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "xTokenContractAddr",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "xAmount",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "yOwner",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "yTokenContractAddr",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "yAmount",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "closed",
+                        "type": "bool"
+                    }
+                ],
+                "internalType": "struct Swap2p.Escrow",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "ownerTokens",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]

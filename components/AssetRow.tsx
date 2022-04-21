@@ -18,7 +18,7 @@ export const AssetRow = (({ data }: { data: AssetCardData }) => {
   }
 
   return (
-    <TableRow key={data.displayName}>
+    <TableRow>
       <TableCell align='right'>
         <Avatar>{data.shortName}</Avatar>
       </TableCell>

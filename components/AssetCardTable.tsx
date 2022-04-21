@@ -17,7 +17,7 @@ export const AssetCardTable = ({ assets }: { assets: AssetCardData[] }) => (
       </TableHead>
       
       <TableBody>
-        {assets.map(item => <AssetRow data={item} />)}
+        {assets.map(item => <AssetRow key={item.displayName} data={item} />)}
       </TableBody>
     </Table>
   </TableContainer>
