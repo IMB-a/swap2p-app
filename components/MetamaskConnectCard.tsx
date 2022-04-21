@@ -1,7 +1,7 @@
 import { Button, Card, CardActions, CardContent, Typography } from '@mui/material';
 import { useMetaMask } from 'metamask-react';
 
-const MetamaskConnectCard = () => {
+export const MetaMaskConnectCard = () => {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
   return {
@@ -50,5 +50,3 @@ const MetamaskConnectCard = () => {
     </Card>,
   }[status];
 }
-
-export default MetamaskConnectCard;

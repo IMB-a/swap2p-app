@@ -1,28 +1,42 @@
 import React from 'react';
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { Backdrop, Button, Card, CardActions, CardContent, CircularProgress, Container, Stack, Typography } from '@mui/material'
-import { useMetaMask } from 'metamask-react'
-import { AssetCardData } from '../components';
-import { AssetCardTable } from '../components/AssetCardTable';
-import MetamaskConnectCard from '../components/MetamaskConnectCard';
+import { Backdrop, CircularProgress, Container } from '@mui/material'
 
-const assets_connected: AssetCardData[] = [
-  {
-    shortName: 'ETH',
-    displayName: 'Ethereum',
-    network: 'Ethereum',
-    price: 3000.0,
-    count: 0.0,
-  },
-  {
-    shortName: 'KAL',
-    displayName: 'Kal Token',
-    network: 'Rinkeby',
-    price: 0.0,
-    count: 100.0,
-  },
-];
+import { useMetaMask } from 'metamask-react'
+
+import { AssetCardData, AssetTable, MetaMaskConnectCard } from '@components';
+
+const assets_connected: Record<string, AssetCardData[]> = {
+  '0x4': [
+    {
+      shortName: 'ETH',
+      displayName: 'Ethereum',
+      price: 3000.0,
+      count: 0.0,
+
+      address: '0x2d71c4144b58c640197EC0970A5bA09C2DfA062a',
+    },
+    {
+      shortName: 'KAL',
+      displayName: 'Kal Token',
+      price: 0.0,
+      count: 100.0,
+
+      address: '0x2d71c4144b58c640197EC0970A5bA09C2DfA062a',
+    },
+  ],
+  '0x1': [
+    {
+      shortName: 'ETH',
+      displayName: 'Ethereum',
+      price: 3000.0,
+      count: 0.0,
+
+      address: '0x2d71c4144b58c640197EC0970A5bA09C2DfA062a',
+    },
+  ],
+};
 
 const Home: NextPage = () => {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
@@ -34,7 +48,7 @@ const Home: NextPage = () => {
     if (status === 'connected') {
       setOpenBackdrop(true);
       const timeout = setTimeout(() => {
-        setAssets(assets_connected);
+        setAssets(assets_connected[chainId]);
         setOpenBackdrop(false);
       }, 1000);
       return () => {
@@ -54,13 +68,15 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <MetamaskConnectCard />
-
       <Backdrop open={openBackdrop}>
         <CircularProgress />
       </Backdrop>
 
-      <AssetCardTable assets={assets} />
+      <MetaMaskConnectCard />
+
+      <Container style={{ display: status === 'connected' ? 'flex' : 'none' }}>
+        <AssetTable assets={assets} />
+      </Container>
     </Container>
   )
 }

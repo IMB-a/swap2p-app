@@ -1,9 +1,24 @@
-import { Avatar, Button as IconButton, Menu, MenuItem, TableCell, TableRow } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { AssetCardData } from './AssetCard';
 import React from 'react';
+import { useRouter } from 'next/router';
+import { Avatar, Button as IconButton, Link, Menu, MenuItem, TableCell, TableRow } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+
+import { useConnectedMetaMask } from 'metamask-react';
+
+import etherscanLink from '@metamask/etherscan-link';
+
+export interface AssetCardData {
+  shortName: string;
+  displayName: string;
+  price: number;
+  count: number;
+
+  address: string;
+}
 
 export const AssetRow = (({ data }: { data: AssetCardData }) => {
+  const router = useRouter();
+  const { status, connect, account, chainId, ethereum } = useConnectedMetaMask();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -11,6 +26,7 @@ export const AssetRow = (({ data }: { data: AssetCardData }) => {
     setAnchorEl(event.currentTarget);
   }
   const handleCreateTrade = () => {
+    router.push(`/trade/create?XAsset=${data.address}`);
     setAnchorEl(null);
   };
   const handleViewAbout = () => {
@@ -20,10 +36,9 @@ export const AssetRow = (({ data }: { data: AssetCardData }) => {
   return (
     <TableRow>
       <TableCell align='right'>
-        <Avatar>{data.shortName}</Avatar>
+        <Link href={etherscanLink.createAccountLinkForChain(data.address, chainId)}><Avatar>{data.shortName}</Avatar></Link>
       </TableCell>
       <TableCell align='right'>{data.displayName}</TableCell>
-      <TableCell align='right'>{data.network}</TableCell>
       <TableCell align='right'>{data.price}</TableCell>
       <TableCell align='right'>{data.count}</TableCell>
       <TableCell align='right'>
