@@ -4,55 +4,58 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { Button, Container, FormControl, TextField, Typography } from '@mui/material';
 
-import { MetaMaskConnectCard } from '@components';
 import { useMetaMask } from 'metamask-react';
+
+import { MetaMaskConnectCard } from '@components';
+
 import { Swap2pInterface, addressRegexp, ERC20Interface, swap2pAddress } from 'utils';
 
 const CreateTradePage: NextPage = () => {
   const router = useRouter();
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
-  const [XAsset, setXAsset] = useState('');
-  const [XAmount, setXAmount] = useState<number | null>(null);
-  const [YAddress, setYAddress] = useState('');
-  const [YAsset, setYAsset] = useState('');
-  const [YAmount, setYAmount] = useState<number | null>(null);
+  const YOwnerDefault = '0x0000000000000000000000000000000000000000';
+  const [XAssetAddress, setXAssetAddress] = useState('');
+  const [XAmount, setXAmount] = useState('');
+  const [YOwner, setYOwner] = useState('');
+  const [YAssetAddress, setYAssetAddress] = useState('');
+  const [YAmount, setYAmount] = useState('');
 
   useEffect(() => {
     const {
-      XAsset: XAssetQuery,
+      XAssetAddress: XAssetAddressQuery,
       XAmount: XAmountQuery,
-      YAddress: YAddressQuery,
-      YAsset: YAssetQuery,
+      YOwner: YOwnerQuery,
+      YAssetAddress: YAssetAddressQuery,
       YAmount: YAmountQuery,
     } = router.query;
 
-    setXAsset(XAssetQuery as string ?? '');
-    setXAmount(Number(XAmountQuery as string));
-    setYAddress(YAddressQuery as string ?? '');
-    setYAsset(YAssetQuery as string ?? '');
-    setYAmount(Number(YAmountQuery as string));
+    setXAssetAddress(XAssetAddressQuery as string ?? '');
+    setXAmount(XAmountQuery as string ?? '');
+    setYOwner(YOwnerQuery as string ?? '');
+    setYAssetAddress(YAssetAddressQuery as string ?? '');
+    setYAmount(YAmountQuery as string ?? '');
   }, [router.isReady]);
 
-  const XAssetMatch = XAsset.match(addressRegexp);
-  const YAddressMatch = YAddress.match(addressRegexp);
-  const YAssetMatch = YAsset.match(addressRegexp);
+  const XAssetAddressMatch = XAssetAddress.match(addressRegexp);
+  const YOwnerMatch = YOwner.length ? YOwner.match(addressRegexp) : true;
+  const YAssetAddressMatch = YAssetAddress.match(addressRegexp);
 
-  const canCreate = Boolean(XAssetMatch && XAmount !== null && YAddressMatch && YAssetMatch && YAmount !== null);
+  const canCreate = Boolean(XAssetAddressMatch && XAmount !== null && YOwnerMatch && YAssetAddressMatch && YAmount !== null);
 
   const handleSubmit = async () => {
     const approveData = ERC20Interface.encodeFunctionData('approve', [swap2pAddress, XAmount]);
     await ethereum.request({
       method: 'eth_sendTransaction',
       params: [{
-        to: XAsset,
+        to: XAssetAddress,
         from: ethereum.selectedAddress,
         chainId: chainId,
         data: approveData,
       }],
     });
 
-    const escrowData = Swap2pInterface.encodeFunctionData('createEscrow', [XAsset, XAmount, YAsset, YAmount, YAddress]);
+    const escrowData = Swap2pInterface.encodeFunctionData('createEscrow', [XAssetAddress, XAmount, YAssetAddress, YAmount, YOwner.length ? YOwner : YOwnerDefault]);
     await ethereum.request({
       method: 'eth_sendTransaction',
       params: [{
@@ -86,7 +89,7 @@ const CreateTradePage: NextPage = () => {
           }}
         />
         <TextField
-          label='XAddress'
+          label='XOwner'
           value={account}
           InputLabelProps={{
             shrink: true,
@@ -97,35 +100,34 @@ const CreateTradePage: NextPage = () => {
         />
         <TextField
           required
-          label='XAsset'
-          value={XAsset}
-          onChange={e => setXAsset(e.target.value)}
+          label='XAssetAddress'
+          value={XAssetAddress}
+          onChange={e => setXAssetAddress(e.target.value)}
         />
         <TextField
           required
           label='XAmount'
           type="number"
           value={XAmount}
-          onChange={e => setXAmount(e.target.value ? Number(e.target.value) : null)}
+          onChange={e => setXAmount(e.target.value)}
+        />
+        <TextField
+          label='YOwner'
+          value={YOwner}
+          onChange={e => setYOwner(e.target.value)}
         />
         <TextField
           required
-          label='YAddress'
-          value={YAddress}
-          onChange={e => setYAddress(e.target.value)}
-        />
-        <TextField
-          required
-          label='YAsset'
-          value={YAsset}
-          onChange={e => setYAsset(e.target.value)}
+          label='YAssetAddress'
+          value={YAssetAddress}
+          onChange={e => setYAssetAddress(e.target.value)}
         />
         <TextField
           required
           label='YAmount'
           type="number"
           value={YAmount}
-          onChange={e => setYAmount(e.target.value ? Number(e.target.value) : null)}
+          onChange={e => setYAmount(e.target.value)}
         />
         <Button
           disabled={!canCreate}

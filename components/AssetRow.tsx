@@ -26,7 +26,7 @@ export const AssetRow = (({ data }: { data: AssetCardData }) => {
     setAnchorEl(event.currentTarget);
   }
   const handleCreateTrade = () => {
-    router.push(`/trade/create?XAsset=${data.address}`);
+    router.push(`/trade/create?XAssetAddress=${data.address}`);
     setAnchorEl(null);
   };
   const handleViewAbout = () => {
