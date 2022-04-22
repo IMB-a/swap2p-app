@@ -9,6 +9,7 @@ import { EscrowData } from './Escrow';
 import { truncateAddress } from 'utils';
 import InfoIcon from '@mui/icons-material/Info';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { utils } from 'ethers';
 
 export const EscrowRow = (({ data }: { data: EscrowData }) => {
   const router = useRouter();
@@ -23,11 +24,11 @@ export const EscrowRow = (({ data }: { data: EscrowData }) => {
       <TableCell align='right'>{data.closed ? <CheckCircleIcon color='success' /> : <InfoIcon color='info' /> }</TableCell>
       <TableCell align='right'>{truncateAddress(data.XOwner)}</TableCell>
       <TableCell align='right'>{truncateAddress(data.XAssetAddress)}</TableCell>
-      <TableCell align='right'>{data.XAmount.toString()}</TableCell>
+      <TableCell align='right'>{utils.formatUnits(data.XAmount, 18)}</TableCell>
 
       <TableCell align='right'>{truncateAddress(data.YOwner)}</TableCell>
       <TableCell align='right'>{truncateAddress(data.YAssetAddress)}</TableCell>
-      <TableCell align='right'>{data.YAmount.toString()}</TableCell>
+      <TableCell align='right'>{utils.formatUnits(data.YAmount, 18)}</TableCell>
     </TableRow>
   )
 });
