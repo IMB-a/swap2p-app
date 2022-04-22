@@ -5,7 +5,7 @@ import { Backdrop, CircularProgress, Container } from '@mui/material'
 
 import { useMetaMask } from 'metamask-react'
 
-import { AssetCardData, AssetTable, MetaMaskConnectCard } from '@components';
+import { AssetCardData, AssetTable, MetaMaskConnectCard, NavBar } from '@components';
 
 const assets_connected: Record<string, AssetCardData[]> = {
   '0x4': [
@@ -54,6 +54,8 @@ const Home: NextPage = () => {
       <Backdrop open={openBackdrop}>
         <CircularProgress />
       </Backdrop>
+
+      <NavBar />
 
       <MetaMaskConnectCard />
 

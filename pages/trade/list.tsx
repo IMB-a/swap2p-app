@@ -6,35 +6,13 @@ import { Backdrop, CircularProgress, Container } from '@mui/material';
 
 import { useMetaMask } from 'metamask-react';
 
-import { EscrowData, EscrowTable, MetaMaskConnectCard } from '@components';
+import { EscrowData, EscrowTable, MetaMaskConnectCard, NavBar } from '@components';
 
-import { BigNumber } from 'ethers';
 import { mapApiEscrowToEscrow } from 'utils';
-
-const escrows_fetched: EscrowData[] = [
-  {
-    escrowIndex: BigNumber.from(0),
-    XOwner: '0x2d71c4144b58c640197EC0970A5bA09C2DfA062a',
-    XAssetAddress: '0x2d71c4144b58c640197EC0970A5bA09C2DfA062a',
-    XAmount: BigNumber.from(0),
-    YOwner: '0x2d71c4144b58c640197EC0970A5bA09C2DfA062a',
-    YAssetAddress: '0x2d71c4144b58c640197EC0970A5bA09C2DfA062a',
-    YAmount: BigNumber.from(0),
-    closed: false,
-  },
-  {
-    escrowIndex: BigNumber.from(1),
-    XOwner: '0x2d71c4144b58c640197EC0970A5bA09C2DfA062a',
-    XAssetAddress: '0x2d71c4144b58c640197EC0970A5bA09C2DfA062a',
-    XAmount: BigNumber.from(0),
-    YOwner: '0x2d71c4144b58c640197EC0970A5bA09C2DfA062a',
-    YAssetAddress: '0x2d71c4144b58c640197EC0970A5bA09C2DfA062a',
-    YAmount: BigNumber.from(0),
-    closed: false,
-  },
-];
+import { useSnackbar } from 'notistack';
 
 const TradeListPage: NextPage = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
   const [openBackdrop, setOpenBackdrop] = useState(false);
@@ -47,10 +25,15 @@ const TradeListPage: NextPage = () => {
     }
 
     setOpenBackdrop(true);
-    const getEscrowsPromise = axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + '/api/trades?qOffset=0&qLimit=10').then(({ data }) => {
-      setEscrows(data.map(mapApiEscrowToEscrow));
-      setOpenBackdrop(false);
-    });
+    const getEscrowsPromise = axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + '/api/trades?qOffset=0&qLimit=10')
+      .then(({ data }) => {
+        setEscrows(data.map(mapApiEscrowToEscrow));
+        setOpenBackdrop(false);
+      })
+      .catch((error) => {
+        enqueueSnackbar('Something went wrong :(', { variant: 'error' });
+        setOpenBackdrop(false);
+      });
 
     return () => {
       setEscrows([]);
@@ -70,10 +53,12 @@ const TradeListPage: NextPage = () => {
         <CircularProgress />
       </Backdrop>
 
+      <NavBar />
+
       <MetaMaskConnectCard />
 
       <Container style={{ display: status === 'connected' ? 'flex' : 'none' }}>
-        <EscrowTable escrows={escrows} />
+        <EscrowTable escrows={escrows} setters={{ setEscrows, setOpenBackdrop }} />
       </Container>
     </Container>
   );

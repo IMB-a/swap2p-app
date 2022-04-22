@@ -6,3 +6,5 @@ export * from './EscrowRow';
 export * from './EscrowTable';
 
 export * from './MetaMaskConnectCard';
+
+export * from './NavBar';
