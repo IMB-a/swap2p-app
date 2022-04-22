@@ -25,7 +25,7 @@ export const EscrowTable = ({ escrows, setters }: { escrows: EscrowData[], sette
   const getEscrows = async (page: number) => {
     try {
       if (setters.setOpenBackdrop) setters.setOpenBackdrop(true);
-      const { data } = await axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + `/api/trades?qOffset=${page * 10}&qLimit=10`);
+      const { data } = await axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + `/api/trades?offset=${page * 10}&limit=10`);
       setters.setEscrows(data.map(mapApiEscrowToEscrow));
     } catch (error) {
       enqueueSnackbar('Something went wrong :(');

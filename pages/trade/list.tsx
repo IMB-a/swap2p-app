@@ -25,7 +25,7 @@ const TradeListPage: NextPage = () => {
     }
 
     setOpenBackdrop(true);
-    const getEscrowsPromise = axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + '/api/trades?qOffset=0&qLimit=10')
+    const getEscrowsPromise = axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + '/api/trades?offset=0&limit=10')
       .then(({ data }) => {
         setEscrows(data.map(mapApiEscrowToEscrow));
         setOpenBackdrop(false);
