@@ -42,17 +42,17 @@ export const NavBar = () => {
         </Box>
         {
           {
-            'initializing': <Box>
+            'initializing': <Box style={{ padding: '0px 20px' }}>
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
             </Box>,
-            'unavailable': <Box>
+            'unavailable': <Box style={{ padding: '0px 20px' }}>
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
             </Box>,
-            'notConnected': <Box display='flex'>
+            'notConnected': <Box style={{ padding: '0px 20px' }} display='flex'>
               <Button onClick={connect}>Connect to MetaMask</Button>
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
             </Box>,
-            'connecting': <Box>
+            'connecting': <Box style={{ padding: '0px 20px' }}>
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
             </Box>,
             'connected': <Box style={{ padding: '0px 20px' }}>
