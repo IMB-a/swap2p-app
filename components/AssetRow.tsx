@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { Avatar, Button as IconButton, Link, Menu, MenuItem, TableCell, TableRow } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
-import { useConnectedMetaMask } from 'metamask-react';
+import { useMetaMask } from 'metamask-react';
 
 import etherscanLink from '@metamask/etherscan-link';
 import { BigNumber, utils } from 'ethers';
@@ -20,7 +20,7 @@ export interface AssetData {
 
 export const AssetRow = (({ data }: { data: AssetData }) => {
   const router = useRouter();
-  const { status, connect, account, chainId, ethereum } = useConnectedMetaMask();
+  const { status, connect, account, chainId, ethereum } = useMetaMask();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -38,7 +38,7 @@ export const AssetRow = (({ data }: { data: AssetData }) => {
   return (
     <TableRow>
       <TableCell align='right'>
-        <Link href={etherscanLink.createAccountLinkForChain(data.address, chainId)}><Avatar>{data.shortName}</Avatar></Link>
+        <Link href={etherscanLink.createAccountLinkForChain(data.address, chainId!)}><Avatar>{data.shortName}</Avatar></Link>
       </TableCell>
       <TableCell align='right'>{data.displayName}</TableCell>
       <TableCell align='right'>{data.price}</TableCell>
@@ -60,8 +60,7 @@ export const AssetRow = (({ data }: { data: AssetData }) => {
             'aria-labelledby': 'basic-button',
           }}
         >
-          <MenuItem onClick={handleCreateTrade}>Создать трейд</MenuItem>
-          <MenuItem onClick={handleViewAbout}>Посмотреть сводку</MenuItem>
+          <MenuItem onClick={handleCreateTrade}>Create trade</MenuItem>
         </Menu>
       </TableCell>
     </TableRow>

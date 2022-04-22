@@ -6,11 +6,11 @@ import * as material from '@mui/material';
 
 import { useMetaMask } from 'metamask-react';
 
-import { Escrow, EscrowData, MetaMaskConnectCard, NavBar } from '@components';
+import { Escrow, EscrowData, NavBar } from '@components';
 
 import { ERC20Interface, swap2pAddress, Swap2pInterface } from 'utils';
 import { Button, Container, Typography } from '@mui/material';
-import { BigNumber } from 'ethers';
+import { BigNumber, providers } from 'ethers';
 
 const TradePage: NextPage = () => {
   const router = useRouter();
@@ -18,6 +18,12 @@ const TradePage: NextPage = () => {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
   const [escrowData, setEscrowData] = useState<EscrowData | null>(null);
+  const addressAllowed = escrowData
+    ? escrowData.YOwner.toLowerCase() === account?.toLowerCase() || escrowData.YOwner === '0x0000000000000000000000000000000000000000'
+    : false;
+  const isOwner = escrowData
+    ? escrowData.XOwner.toLowerCase() === account?.toLowerCase()
+    : false;
 
   useEffect(() => {
     if (!router.isReady || status !== 'connected') {
@@ -40,8 +46,11 @@ const TradePage: NextPage = () => {
   }, [router.isReady, status]);
 
   const onAcceptClick = async () => {
+    const provider = new providers.Web3Provider(ethereum)
+
+    let tx;
     const approveData = ERC20Interface.encodeFunctionData('approve', [swap2pAddress, escrowData!.YAmount]);
-    await ethereum.request({
+    tx = await ethereum.request({
       method: 'eth_sendTransaction',
       params: [{
         to: escrowData!.YAssetAddress,
@@ -51,8 +60,10 @@ const TradePage: NextPage = () => {
       }],
     });
 
+    await provider.waitForTransaction(tx);
+
     const acceptData = Swap2pInterface.encodeFunctionData('acceptEscrow', [escrowIndex]);
-    await ethereum.request({
+    tx = await ethereum.request({
       method: 'eth_sendTransaction',
       params: [{
         to: swap2pAddress,
@@ -63,17 +74,6 @@ const TradePage: NextPage = () => {
     });
   };
   const onCancelClick = async () => {
-    const approveData = ERC20Interface.encodeFunctionData('approve', [swap2pAddress, escrowData!.YAmount]);
-    await ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [{
-        to: escrowData!.YAssetAddress,
-        from: ethereum.selectedAddress,
-        chainId: chainId,
-        data: approveData,
-      }],
-    });
-
     const cancelData = Swap2pInterface.encodeFunctionData('cancelEscrow', [escrowIndex]);
     await ethereum.request({
       method: 'eth_sendTransaction',
@@ -96,8 +96,6 @@ const TradePage: NextPage = () => {
 
       <NavBar />
 
-      <MetaMaskConnectCard />
-
       {
         escrowData
           ? <Escrow data={escrowData} />
@@ -108,12 +106,12 @@ const TradePage: NextPage = () => {
         escrowData
           ?
           <Container>
-            <Button onClick={onAcceptClick}>
+            <Button disabled={escrowData.closed || !addressAllowed} onClick={onAcceptClick}>
               <Typography>
                 Accept
               </Typography>
             </Button>
-            <Button onClick={onCancelClick}>
+            <Button disabled={escrowData.closed || !addressAllowed || !isOwner} onClick={onCancelClick}>
               <Typography>
                 Reject
               </Typography>

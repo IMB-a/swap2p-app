@@ -10,7 +10,7 @@ export { Swap2pInterface, ERC20Interface };
 
 export const addressRegexp = /^0x[a-fA-F0-9]{40}$/;
 
-export const swap2pAddress = '0x2512444b85715F383eE3a17bCB40eCE0C9723ea6';
+export const swap2pAddress = '0xa63Dc8A11402AAeE75d1e3A4A316868F56a951Dd';
 
 export const truncateAddress = (address: string) => `${address.substring(0, 6)}...${address.substring(38)}`;
 
