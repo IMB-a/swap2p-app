@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:80": "next dev -p 80",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -11,9 +12,14 @@
   "dependencies": {
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
+    "@metamask/etherscan-link": "^2.1.0",
+    "@mui/icons-material": "^5.6.2",
     "@mui/material": "^5.6.1",
+    "axios": "^0.26.1",
+    "ethers": "^5.6.4",
     "metamask-react": "^2.3.0",
     "next": "12.1.5",
+    "notistack": "^2.0.4",
     "react": "18.0.0",
     "react-dom": "18.0.0"
   },

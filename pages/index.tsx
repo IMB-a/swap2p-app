@@ -1,48 +1,47 @@
-import React, { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { Avatar, Button, Card, CardActions, CardContent, CircularProgress, Container, Stack, Typography } from '@mui/material'
+import { Backdrop, CircularProgress, Container } from '@mui/material'
+
 import { useMetaMask } from 'metamask-react'
 
-const assets_connected: JSX.Element[] = [
-  {
-    shortName: 'ETH',
-    displayName: 'Ethereum',
-    price: 3000.0,
-    count: 0.0,
-  },
-  {
-    shortName: 'KAL',
-    displayName: 'Kal Token',
-    price: 0.0,
-    count: 100.0,
-  },
-].map((item, index) => (
-  <Card id={`assets_${index}`} sx={{ display: 'grid' }}>
-    <Avatar>{item.shortName}</Avatar>
-    <CardContent sx={{ display: 'grid' }}>
-      <Typography>{item.shortName}</Typography>
-      <Typography>{item.displayName}</Typography>
-      <Typography>{item.price} $</Typography>
-      <Typography>{item.count}</Typography>
-    </CardContent>
-  </Card>
-));
+import { AssetCardData, AssetTable, MetaMaskConnectCard, NavBar } from '@components';
+
+const assets_connected: Record<string, AssetCardData[]> = {
+  '0x4': [
+    {
+      shortName: 'X',
+      displayName: 'X',
+      price: 0.0,
+      count: 100.0,
+
+      address: '0xcbA65c05C2e1E76251d2ab0C0A6E4714BA1dF607',
+    },
+  ],
+  '0x1': [],
+};
 
 const Home: NextPage = () => {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
-  // const assets = status === 'connected' ? assets_connected : [];
-  const [assets, setAssets] = React.useState([] as JSX.Element[]);
+  const [openBackdrop, setOpenBackdrop] = useState(false);
+  const [assets, setAssets] = useState([] as AssetCardData[]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (status === 'connected') {
-      setAssets([<CircularProgress />]);
-      const timeout = setTimeout(() => { setAssets(assets_connected) }, 10000);
-      return () => clearTimeout(timeout);
+      setOpenBackdrop(true);
+      const timeout = setTimeout(() => {
+        setAssets(assets_connected[chainId] ?? []);
+        setOpenBackdrop(false);
+      }, 100);
+      return () => {
+        setAssets([]);
+        setOpenBackdrop(false);
+        clearTimeout(timeout);
+      };
     }
     setAssets([]);
-  }, [status]);
+  }, [status, chainId]);
 
   return (
     <Container>
@@ -52,57 +51,17 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {
-        {
-          'initializing': <Card sx={{ maxWidth: 360 }}>
-            <CardContent>
-              <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
-              <Typography variant='body2' color='text.secondary'>
-                Synchronization with MetaMask ongoing...
-              </Typography>
-            </CardContent>
-          </Card>,
-          'unavailable': <Card sx={{ maxWidth: 360 }}>
-            <CardContent>
-              <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
-              <Typography variant='body2' color='text.secondary'>
-                MetaMask not available :(
-              </Typography>
-            </CardContent>
-          </Card>,
-          'notConnected': <Card sx={{ maxWidth: 360 }}>
-            <CardContent>
-              <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
-              <Typography variant='body2' color='text.secondary'>
-                Not connected
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Button onClick={connect}>Connect to MetaMask</Button>
-            </CardActions>
-          </Card>,
-          'connecting': <Card sx={{ maxWidth: 360 }}>
-            <CardContent>
-              <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
-              <Typography variant='body2' color='text.secondary'>
-                Connecting...
-              </Typography>
-            </CardContent>
-          </Card>,
-          'connected': <Card sx={{ maxWidth: 360 }}>
-            <CardContent>
-              <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
-              <Typography variant='body2' color='text.secondary'>
-                Connected account {account} on chain ID {chainId}
-              </Typography>
-            </CardContent>
-          </Card>,
-        }[status]
-      }
+      <Backdrop open={openBackdrop}>
+        <CircularProgress />
+      </Backdrop>
 
-      <Stack display='grid'>
-        {assets}
-      </Stack>
+      <NavBar />
+
+      <MetaMaskConnectCard />
+
+      <Container style={{ display: status === 'connected' ? 'flex' : 'none' }}>
+        <AssetTable assets={assets} />
+      </Container>
     </Container>
   )
 }
