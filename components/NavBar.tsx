@@ -50,7 +50,6 @@ export const NavBar = () => {
             </Box>,
             'notConnected': <Box style={{ padding: '0px 20px' }} display='flex'>
               <Button onClick={connect}>Connect to MetaMask</Button>
-              <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
             </Box>,
             'connecting': <Box style={{ padding: '0px 20px' }}>
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
