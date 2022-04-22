@@ -25,9 +25,9 @@ export const EscrowRow = (({ data }: { data: EscrowData }) => {
       <TableCell align='right'>{truncateAddress(data.XAssetAddress)}</TableCell>
       <TableCell align='right'>{data.XAmount.toString()}</TableCell>
 
-      <TableCell align='right'>{truncateAddress(data.XOwner)}</TableCell>
-      <TableCell align='right'>{truncateAddress(data.XAssetAddress)}</TableCell>
-      <TableCell align='right'>{data.XAmount.toString()}</TableCell>
+      <TableCell align='right'>{truncateAddress(data.YOwner)}</TableCell>
+      <TableCell align='right'>{truncateAddress(data.YAssetAddress)}</TableCell>
+      <TableCell align='right'>{data.YAmount.toString()}</TableCell>
     </TableRow>
   )
 });

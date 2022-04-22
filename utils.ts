@@ -31,9 +31,9 @@ export const mapApiEscrowToEscrow = (dto: ApiEscrow): EscrowData => ({
     XOwner: dto.xAddress,
     XAssetAddress: dto.xAsset,
     XAmount: BigNumber.from(dto.xAmount),
-    YOwner: dto.xAddress,
-    YAssetAddress: dto.xAsset,
-    YAmount: BigNumber.from(dto.xAmount),
+    YOwner: dto.yAddress,
+    YAssetAddress: dto.yAsset,
+    YAmount: BigNumber.from(dto.yAmount),
     closed: dto.closed,
 });
 
