@@ -2,42 +2,30 @@ import { useEffect, useState } from 'react';
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { Backdrop, CircularProgress, Container } from '@mui/material'
+import axios from 'axios';
 
 import { useMetaMask } from 'metamask-react'
 
-import { AssetCardData, AssetTable, MetaMaskConnectCard, NavBar } from '@components';
+import { AssetData, AssetTable, MetaMaskConnectCard, NavBar } from '@components';
 
-const assets_connected: Record<string, AssetCardData[]> = {
-  '0x4': [
-    {
-      shortName: 'X',
-      displayName: 'X',
-      price: 0.0,
-      count: 100.0,
-
-      address: '0xcbA65c05C2e1E76251d2ab0C0A6E4714BA1dF607',
-    },
-  ],
-  '0x1': [],
-};
+import { mapApiAssetToAsset } from 'utils';
 
 const Home: NextPage = () => {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
   const [openBackdrop, setOpenBackdrop] = useState(false);
-  const [assets, setAssets] = useState([] as AssetCardData[]);
+  const [assets, setAssets] = useState([] as AssetData[]);
 
   useEffect(() => {
     if (status === 'connected') {
       setOpenBackdrop(true);
-      const timeout = setTimeout(() => {
-        setAssets(assets_connected[chainId] ?? []);
+      const balancePromise = axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + `/api/balance?wallet=${account}`).then(({ data }) => {
+        setAssets(data.map(mapApiAssetToAsset));
         setOpenBackdrop(false);
-      }, 100);
+      });
       return () => {
         setAssets([]);
         setOpenBackdrop(false);
-        clearTimeout(timeout);
       };
     }
     setAssets([]);

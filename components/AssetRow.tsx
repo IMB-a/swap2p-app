@@ -6,17 +6,19 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useConnectedMetaMask } from 'metamask-react';
 
 import etherscanLink from '@metamask/etherscan-link';
+import { BigNumber, utils } from 'ethers';
 
-export interface AssetCardData {
+export interface AssetData {
   shortName: string;
   displayName: string;
   price: number;
-  count: number;
+  count: BigNumber;
 
   address: string;
+  decimals: number;
 }
 
-export const AssetRow = (({ data }: { data: AssetCardData }) => {
+export const AssetRow = (({ data }: { data: AssetData }) => {
   const router = useRouter();
   const { status, connect, account, chainId, ethereum } = useConnectedMetaMask();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -40,7 +42,7 @@ export const AssetRow = (({ data }: { data: AssetCardData }) => {
       </TableCell>
       <TableCell align='right'>{data.displayName}</TableCell>
       <TableCell align='right'>{data.price}</TableCell>
-      <TableCell align='right'>{data.count}</TableCell>
+      <TableCell align='right'>{utils.formatUnits(data.count, data.decimals)}</TableCell>
       <TableCell align='right'>
         <IconButton
           aria-controls={open ? 'basic-menu' : undefined}

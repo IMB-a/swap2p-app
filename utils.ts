@@ -1,7 +1,7 @@
 import abi from './abi-swap2p.json';
 import abiERC20 from './abi-erc20.json';
 import { BigNumber, ethers } from 'ethers';
-import { EscrowData } from '@components';
+import { AssetData, EscrowData } from '@components';
 
 const Swap2pInterface = new ethers.utils.Interface(abi);
 const ERC20Interface = new ethers.utils.Interface(abiERC20);
@@ -35,4 +35,19 @@ export const mapApiEscrowToEscrow = (dto: ApiEscrow): EscrowData => ({
     YAssetAddress: dto.xAsset,
     YAmount: BigNumber.from(dto.xAmount),
     closed: dto.closed,
+});
+
+export interface ApiAsset {
+    address: string;
+    amount: string;
+    asset: string;
+    decimals: number;
+}
+export const mapApiAssetToAsset = (dto: ApiAsset): AssetData => ({
+    shortName: '',
+    displayName: dto.asset,
+    price: 0,
+    count: BigNumber.from(dto.amount),
+    address: dto.address,
+    decimals: dto.decimals,
 });

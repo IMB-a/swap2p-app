@@ -14,7 +14,7 @@ import { BigNumber } from 'ethers';
 
 const TradePage: NextPage = () => {
   const router = useRouter();
-  const { escrowIndex } = router.query;
+  const { 'escrow-index': escrowIndex } = router.query;
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
   const [escrowData, setEscrowData] = useState<EscrowData | null>(null);
@@ -107,18 +107,18 @@ const TradePage: NextPage = () => {
       {
         escrowData
           ?
-            <Container>
-              <Button onClick={onAcceptClick}>
-                <Typography>
-                  Accept
-                </Typography>
-              </Button>
-              <Button onClick={onCancelClick}>
-                <Typography>
-                  Reject
-                </Typography>
-              </Button>
-            </Container>
+          <Container>
+            <Button onClick={onAcceptClick}>
+              <Typography>
+                Accept
+              </Typography>
+            </Button>
+            <Button onClick={onCancelClick}>
+              <Typography>
+                Reject
+              </Typography>
+            </Button>
+          </Container>
           : null
       }
     </material.Container>

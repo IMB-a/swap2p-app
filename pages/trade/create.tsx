@@ -82,7 +82,7 @@ const CreateTradePage: NextPage = () => {
       <FormControl component='form' style={{ display: status === 'connected' ? 'flex' : 'none'}}>
         <TextField
           label='ChainId'
-          value={chainId}
+          value={chainId ?? ''}
           InputLabelProps={{
             shrink: true,
           }}
@@ -92,7 +92,7 @@ const CreateTradePage: NextPage = () => {
         />
         <TextField
           label='XOwner'
-          value={account}
+          value={account ?? ''}
           InputLabelProps={{
             shrink: true,
           }}
