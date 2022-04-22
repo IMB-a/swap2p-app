@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { AssetCardData, AssetRow } from './AssetRow';
+import { AssetData, AssetRow } from './AssetRow';
 
-export const AssetTable = ({ assets }: { assets: AssetCardData[] }) => (
+export const AssetTable = ({ assets }: { assets: AssetData[] }) => (
   <TableContainer>
     <Table>
       <TableHead>

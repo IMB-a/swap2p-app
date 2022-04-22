@@ -25,10 +25,10 @@ export const EscrowTable = ({ escrows, setters }: { escrows: EscrowData[], sette
   const getEscrows = async (page: number) => {
     try {
       if (setters.setOpenBackdrop) setters.setOpenBackdrop(true);
-      const { data } = await axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + `/api/trades?qOffset=${page * 10}&qLimit=10`);
+      const { data } = await axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + `/api/trades?offset=${page * 10}&limit=10&tradeClosed=false`);
       setters.setEscrows(data.map(mapApiEscrowToEscrow));
     } catch (error) {
-      enqueueSnackbar('Something went wrong :(');
+      enqueueSnackbar('Something went wrong :(', { variant: 'error' });
     } finally {
       if (setters.setOpenBackdrop) setters.setOpenBackdrop(false);
     }
@@ -52,12 +52,13 @@ export const EscrowTable = ({ escrows, setters }: { escrows: EscrowData[], sette
       <Table>
         <TableHead>
           <TableRow>
+            <TableCell align='right' style={{ padding: '16px 16px 0px' }} sx={{ fontSize: '0.75rem', color: '#999' }}>Status</TableCell>
             <TableCell align='right' style={{ padding: '16px 16px 0px' }} sx={{ fontSize: '0.75rem', color: '#999' }}>X Owner Address</TableCell>
             <TableCell align='right' style={{ padding: '16px 16px 0px' }} sx={{ fontSize: '0.75rem', color: '#999' }}>X Asset Address</TableCell>
             <TableCell align='right' style={{ padding: '16px 16px 0px' }} sx={{ fontSize: '0.75rem', color: '#999' }}>X Amount</TableCell>
-            <TableCell align='right' style={{ padding: '16px 16px 0px' }} sx={{ fontSize: '0.75rem', color: '#999' }}>X Owner Address</TableCell>
-            <TableCell align='right' style={{ padding: '16px 16px 0px' }} sx={{ fontSize: '0.75rem', color: '#999' }}>X Asset Address</TableCell>
-            <TableCell align='right' style={{ padding: '16px 16px 0px' }} sx={{ fontSize: '0.75rem', color: '#999' }}>X Amount</TableCell>
+            <TableCell align='right' style={{ padding: '16px 16px 0px' }} sx={{ fontSize: '0.75rem', color: '#999' }}>Y Owner Address</TableCell>
+            <TableCell align='right' style={{ padding: '16px 16px 0px' }} sx={{ fontSize: '0.75rem', color: '#999' }}>Y Asset Address</TableCell>
+            <TableCell align='right' style={{ padding: '16px 16px 0px' }} sx={{ fontSize: '0.75rem', color: '#999' }}>Y Amount</TableCell>
           </TableRow>
         </TableHead>
 
@@ -65,8 +66,16 @@ export const EscrowTable = ({ escrows, setters }: { escrows: EscrowData[], sette
           {escrows.map(item => <EscrowRow key={item.escrowIndex._hex} data={item} />)}
         </TableBody>
       </Table>
-      <IconButton disabled={!prevPageAvailable} onClick={handlePrevPage}><ArrowBackIosNewIcon /></IconButton>
-      <IconButton disabled={!nextPageAvailable} onClick={handleNextPage}><ArrowForwardIosIcon /></IconButton>
+      {
+        escrows.length
+          ? <IconButton disabled={!prevPageAvailable} onClick={handlePrevPage}><ArrowBackIosNewIcon /></IconButton>
+          : null
+      }
+      {
+        escrows.length
+          ? <IconButton disabled={!nextPageAvailable} onClick={handleNextPage}><ArrowForwardIosIcon /></IconButton>
+          : null
+      }
     </TableContainer>
   );
 }

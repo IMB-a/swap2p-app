@@ -2,16 +2,19 @@ import { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { Button, Container, FormControl, TextField, Typography } from '@mui/material';
+import { Backdrop, Button, CircularProgress, Container, FormControl, TextField, Typography } from '@mui/material';
 
 import { useMetaMask } from 'metamask-react';
 
-import { MetaMaskConnectCard, NavBar } from '@components';
+import { NavBar } from '@components';
 
 import { Swap2pInterface, addressRegexp, ERC20Interface, swap2pAddress } from 'utils';
+import { useSnackbar } from 'notistack';
+import { providers } from 'ethers';
 
 const CreateTradePage: NextPage = () => {
   const router = useRouter();
+  const { enqueueSnackbar } = useSnackbar();
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
   const YOwnerDefault = '0x0000000000000000000000000000000000000000';
@@ -20,6 +23,8 @@ const CreateTradePage: NextPage = () => {
   const [YOwner, setYOwner] = useState('');
   const [YAssetAddress, setYAssetAddress] = useState('');
   const [YAmount, setYAmount] = useState('');
+
+  const [buttonStatus, setButtonStatus] = useState<'create' | 'in_progress' | 'completed'>('create');
 
   useEffect(() => {
     const {
@@ -44,27 +49,57 @@ const CreateTradePage: NextPage = () => {
   const canCreate = Boolean(XAssetAddressMatch && XAmount !== null && YOwnerMatch && YAssetAddressMatch && YAmount !== null);
 
   const handleSubmit = async () => {
-    const approveData = ERC20Interface.encodeFunctionData('approve', [swap2pAddress, XAmount]);
-    await ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [{
-        to: XAssetAddress,
-        from: ethereum.selectedAddress,
-        chainId: chainId,
-        data: approveData,
-      }],
-    });
+    try {
+      setButtonStatus('in_progress');
 
-    const escrowData = Swap2pInterface.encodeFunctionData('createEscrow', [XAssetAddress, XAmount, YAssetAddress, YAmount, YOwner.length ? YOwner : YOwnerDefault]);
-    await ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [{
-        to: swap2pAddress,
-        from: ethereum.selectedAddress,
-        chainId: chainId,
-        data: escrowData,
-      }],
-    });
+      const provider = new providers.Web3Provider(ethereum)
+      let tx;
+
+      const approveData = ERC20Interface.encodeFunctionData('approve', [swap2pAddress, XAmount]);
+      tx = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          to: XAssetAddress,
+          from: ethereum.selectedAddress,
+          chainId: chainId,
+          data: approveData,
+        }],
+      });
+
+      await provider.waitForTransaction(tx);
+
+      // get fee
+      const getFeeData = Swap2pInterface.encodeFunctionData('fee', []);
+      const feeData = await ethereum.request({
+        method: 'eth_call',
+        params: [{
+          to: swap2pAddress,
+          from: ethereum.selectedAddress,
+          chainId: chainId,
+          data: getFeeData,
+        }, 'latest'],
+      });
+
+      const [fee] = Swap2pInterface.decodeFunctionResult('fee', feeData);
+      const escrowData = Swap2pInterface.encodeFunctionData('createEscrow', [XAssetAddress, XAmount, YAssetAddress, YAmount, YOwner.length ? YOwner : YOwnerDefault]);
+      tx = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          to: swap2pAddress,
+          from: ethereum.selectedAddress,
+          chainId: chainId,
+          value: fee.toString(),
+          data: escrowData,
+        }],
+      });
+
+      await provider.waitForTransaction(tx);
+
+      setButtonStatus('completed');
+    } catch (error) {
+      setButtonStatus('create');
+      enqueueSnackbar('Something went wrong :(', { variant: 'error' });
+    }
   };
 
   return (
@@ -77,12 +112,10 @@ const CreateTradePage: NextPage = () => {
 
       <NavBar />
 
-      <MetaMaskConnectCard />
-
-      <FormControl component='form' style={{ display: status === 'connected' ? 'flex' : 'none'}}>
+      <FormControl component='form' style={{ display: status === 'connected' ? 'flex' : 'none' }}>
         <TextField
           label='ChainId'
-          value={chainId}
+          value={chainId ?? ''}
           InputLabelProps={{
             shrink: true,
           }}
@@ -92,7 +125,7 @@ const CreateTradePage: NextPage = () => {
         />
         <TextField
           label='XOwner'
-          value={account}
+          value={account ?? ''}
           InputLabelProps={{
             shrink: true,
           }}
@@ -131,10 +164,26 @@ const CreateTradePage: NextPage = () => {
           value={YAmount}
           onChange={e => setYAmount(e.target.value)}
         />
-        <Button
-          disabled={!canCreate}
-          onClick={handleSubmit}
-        ><Typography>Create</Typography></Button>
+
+        {
+          {
+            'create': <Button
+              disabled={!canCreate}
+              onClick={handleSubmit}
+            ><Typography>Create</Typography></Button>,
+            'in_progress': <Button
+              disabled
+              startIcon={<CircularProgress />}
+            >
+              In progress...
+            </Button>,
+            'completed': <Button
+              disabled
+            >
+              Done!
+            </Button>,
+          }[buttonStatus]
+        }
       </FormControl>
     </Container>
   );

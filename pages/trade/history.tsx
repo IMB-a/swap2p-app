@@ -11,7 +11,7 @@ import { EscrowData, EscrowTable, NavBar } from '@components';
 import { mapApiEscrowToEscrow } from 'utils';
 import { useSnackbar } from 'notistack';
 
-const TradeListPage: NextPage = () => {
+const TradeHistoryPage: NextPage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
@@ -25,7 +25,7 @@ const TradeListPage: NextPage = () => {
     }
 
     setOpenBackdrop(true);
-    const getEscrowsPromise = axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + '/api/trades?offset=0&limit=10&tradeClosed=false')
+    const getEscrowsPromise = axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + '/api/trades?offset=0&limit=10&tradeClosed=true')
       .then(({ data }) => {
         setEscrows(data.map(mapApiEscrowToEscrow));
         setOpenBackdrop(false);
@@ -62,4 +62,4 @@ const TradeListPage: NextPage = () => {
   );
 }
 
-export default TradeListPage;
+export default TradeHistoryPage;
