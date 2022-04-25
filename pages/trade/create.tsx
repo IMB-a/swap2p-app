@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { Backdrop, Button, CircularProgress, Container, FormControl, TextField, Typography } from '@mui/material';
+import { Autocomplete, Button, CircularProgress, Container, FormControl, FormGroup, Grid, MenuItem, Select, SelectChangeEvent, Stack, TextField, Typography } from '@mui/material';
 
 import { useMetaMask } from 'metamask-react';
 
-import { NavBar } from '@components';
+import { AssetData, NavBar } from '@components';
 
-import { Swap2pInterface, addressRegexp, ERC20Interface, swap2pAddress } from 'utils';
+import { Swap2pInterface, addressRegexp, ERC20Interface, swap2pAddress, mapApiAssetToAsset } from 'utils';
 import { useSnackbar } from 'notistack';
-import { providers } from 'ethers';
+import { utils, providers } from 'ethers';
+import axios from 'axios';
 
 const CreateTradePage: NextPage = () => {
   const router = useRouter();
@@ -24,9 +25,14 @@ const CreateTradePage: NextPage = () => {
   const [YAssetAddress, setYAssetAddress] = useState('');
   const [YAmount, setYAmount] = useState('');
 
+  const [XAssetDisabled, setXAssetDisabled] = useState(false);
+  const [assets, setAssets] = useState([] as AssetData[]);
+
   const [buttonStatus, setButtonStatus] = useState<'create' | 'in_progress' | 'completed'>('create');
 
   useEffect(() => {
+    if (!router.isReady || status !== 'connected') return;
+
     const {
       XAssetAddress: XAssetAddressQuery,
       XAmount: XAmountQuery,
@@ -40,22 +46,39 @@ const CreateTradePage: NextPage = () => {
     setYOwner(YOwnerQuery as string ?? '');
     setYAssetAddress(YAssetAddressQuery as string ?? '');
     setYAmount(YAmountQuery as string ?? '');
-  }, [router.isReady]);
+
+    const balancePromise = axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + `/api/balance?wallet=${account}`)
+      .then(({ data }) => {
+        setAssets(data.map(mapApiAssetToAsset));
+      })
+      .catch(() => {
+        enqueueSnackbar('Something went wrong :(', { variant: 'error' });
+      });
+  }, [router.isReady, status]);
 
   const XAssetAddressMatch = XAssetAddress.match(addressRegexp);
   const YOwnerMatch = YOwner.length ? YOwner.match(addressRegexp) : true;
   const YAssetAddressMatch = YAssetAddress.match(addressRegexp);
 
-  const canCreate = Boolean(XAssetAddressMatch && XAmount !== null && YOwnerMatch && YAssetAddressMatch && YAmount !== null);
+  const canCreate = Boolean(XAssetAddressMatch && XAmount !== '' && YOwnerMatch && YAssetAddressMatch && YAmount !== '');
 
+  const handleSelectAsset = (event: SelectChangeEvent) => {
+    const address = event.target.value;
+    setXAssetAddress(address);
+    setXAssetDisabled(address !== '');
+  };
   const handleSubmit = async () => {
     try {
       setButtonStatus('in_progress');
 
-      const provider = new providers.Web3Provider(ethereum)
       let tx;
+      const provider = new providers.Web3Provider(ethereum)
+      const XAsset = assets.find(a => a.address.toLowerCase() === XAssetAddress.toLowerCase());
+      const YAsset = assets.find(a => a.address.toLowerCase() === YAssetAddress.toLowerCase());
+      const XAmountPenny = utils.parseUnits(XAmount, XAsset?.decimals ?? 18);
+      const YAmountPenny = utils.parseUnits(YAmount, YAsset?.decimals ?? 18);
 
-      const approveData = ERC20Interface.encodeFunctionData('approve', [swap2pAddress, XAmount]);
+      const approveData = ERC20Interface.encodeFunctionData('approve', [swap2pAddress, XAmountPenny]);
       tx = await ethereum.request({
         method: 'eth_sendTransaction',
         params: [{
@@ -81,7 +104,10 @@ const CreateTradePage: NextPage = () => {
       });
 
       const [fee] = Swap2pInterface.decodeFunctionResult('fee', feeData);
-      const escrowData = Swap2pInterface.encodeFunctionData('createEscrow', [XAssetAddress, XAmount, YAssetAddress, YAmount, YOwner.length ? YOwner : YOwnerDefault]);
+      const escrowData = Swap2pInterface.encodeFunctionData(
+        'createEscrow',
+        [XAssetAddress, XAmountPenny, YAssetAddress, YAmountPenny, YOwner.length ? YOwner : YOwnerDefault],
+      );
       tx = await ethereum.request({
         method: 'eth_sendTransaction',
         params: [{
@@ -112,78 +138,119 @@ const CreateTradePage: NextPage = () => {
 
       <NavBar />
 
-      <FormControl component='form' style={{ display: status === 'connected' ? 'flex' : 'none' }}>
-        <TextField
-          label='ChainId'
-          value={chainId ?? ''}
-          InputLabelProps={{
-            shrink: true,
-          }}
-          InputProps={{
-            readOnly: true,
-          }}
-        />
-        <TextField
-          label='XOwner'
-          value={account ?? ''}
-          InputLabelProps={{
-            shrink: true,
-          }}
-          InputProps={{
-            readOnly: true,
-          }}
-        />
-        <TextField
-          required
-          label='XAssetAddress'
-          value={XAssetAddress}
-          onChange={e => setXAssetAddress(e.target.value)}
-        />
-        <TextField
-          required
-          label='XAmount'
-          type="number"
-          value={XAmount}
-          onChange={e => setXAmount(e.target.value)}
-        />
-        <TextField
-          label='YOwner'
-          value={YOwner}
-          onChange={e => setYOwner(e.target.value)}
-        />
-        <TextField
-          required
-          label='YAssetAddress'
-          value={YAssetAddress}
-          onChange={e => setYAssetAddress(e.target.value)}
-        />
-        <TextField
-          required
-          label='YAmount'
-          type="number"
-          value={YAmount}
-          onChange={e => setYAmount(e.target.value)}
-        />
-
-        {
-          {
-            'create': <Button
-              disabled={!canCreate}
-              onClick={handleSubmit}
-            ><Typography>Create</Typography></Button>,
-            'in_progress': <Button
-              disabled
-              startIcon={<CircularProgress />}
-            >
-              In progress...
-            </Button>,
-            'completed': <Button
-              disabled
-            >
-              Done!
-            </Button>,
-          }[buttonStatus]
-        }
+      <FormControl component='form'>
+        <Grid container>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label='ChainId'
+              value={chainId ?? ''}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              InputProps={{
+                readOnly: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth
+              label='XOwner'
+              value={account ?? ''}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              InputProps={{
+                readOnly: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth
+              label='YOwner'
+              value={YOwner}
+              onChange={e => setYOwner(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <Autocomplete
+              fullWidth
+              freeSolo
+              forcePopupIcon
+              options={assets}
+              getOptionLabel={option => typeof option === 'string' ? option : option.address}
+              onChange={(e, v) => setXAssetAddress(typeof v === 'string' ? v : v?.address ?? '')}
+              renderInput={params => (
+                <TextField
+                  {...params}
+                  required
+                  label='XAssetAddress'
+                  value={XAssetAddress}
+                  InputProps={{
+                    ...params.InputProps,
+                    readOnly: XAssetDisabled,
+                  }}
+                />
+              )}
+              renderOption={(props, option) => <li {...props}>{typeof option === 'string' ? option : option.displayName}</li>}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              required
+              fullWidth
+              label='YAssetAddress'
+              value={YAssetAddress}
+              onChange={e => setYAssetAddress(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              required
+              fullWidth
+              label='XAmount'
+              type='number'
+              value={XAmount}
+              onChange={e => setXAmount(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              required
+              fullWidth
+              label='YAmount'
+              type='number'
+              value={YAmount}
+              onChange={e => setYAmount(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            {
+              {
+                'create': <Button
+                  fullWidth
+                  disabled={!canCreate}
+                  onClick={handleSubmit}
+                ><Typography>Create</Typography></Button>,
+                'in_progress': <Button
+                  fullWidth
+                  disabled
+                  startIcon={<CircularProgress />}
+                >
+                  In progress...
+                </Button>,
+                'completed': <Button
+                  fullWidth
+                  disabled
+                >
+                  Done!
+                </Button>,
+              }[buttonStatus]
+            }
+          </Grid>
+        </Grid>
       </FormControl>
     </Container>
   );
