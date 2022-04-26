@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { Autocomplete, Button, CircularProgress, Container, FormControl, FormGroup, Grid, MenuItem, Select, SelectChangeEvent, Stack, TextField, Typography } from '@mui/material';
+import { Autocomplete, Button, CircularProgress, Container, FormControl, Paper, SelectChangeEvent, Stack, TextField, Typography } from '@mui/material';
 
 import { useMetaMask } from 'metamask-react';
 
 import { AssetData, NavBar } from '@components';
 
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Swap2pInterface, addressRegexp, ERC20Interface, swap2pAddress, mapApiAssetToAsset } from 'utils';
 import { useSnackbar } from 'notistack';
 import { utils, providers } from 'ethers';
@@ -138,95 +139,89 @@ const CreateTradePage: NextPage = () => {
 
       <NavBar />
 
-      <FormControl component='form'>
-        <Grid container>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label='ChainId'
-              value={chainId ?? ''}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              InputProps={{
-                readOnly: true,
-              }}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label='XOwner'
-              value={account ?? ''}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              InputProps={{
-                readOnly: true,
-              }}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label='YOwner'
-              value={YOwner}
-              onChange={e => setYOwner(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <Autocomplete
-              fullWidth
-              freeSolo
-              forcePopupIcon
-              options={assets}
-              getOptionLabel={option => typeof option === 'string' ? option : option.address}
-              onChange={(e, v) => setXAssetAddress(typeof v === 'string' ? v : v?.address ?? '')}
-              renderInput={params => (
-                <TextField
-                  {...params}
-                  required
-                  label='XAssetAddress'
-                  value={XAssetAddress}
-                  InputProps={{
-                    ...params.InputProps,
-                    readOnly: XAssetDisabled,
-                  }}
-                />
-              )}
-              renderOption={(props, option) => <li {...props}>{typeof option === 'string' ? option : option.displayName}</li>}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              required
-              fullWidth
-              label='YAssetAddress'
-              value={YAssetAddress}
-              onChange={e => setYAssetAddress(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              required
-              fullWidth
-              label='XAmount'
-              type='number'
-              value={XAmount}
-              onChange={e => setXAmount(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              required
-              fullWidth
-              label='YAmount'
-              type='number'
-              value={YAmount}
-              onChange={e => setYAmount(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={12}>
+      <Paper style={{ borderRadius: '20px', marginTop: '80px', padding: '20px', maxWidth: '900px', marginLeft: 'auto', marginRight: 'auto' }}>
+        <FormControl fullWidth component='form'>
+          <Stack direction='column'>
+            <Typography variant='h4' align='center'><b>Create trade</b></Typography>
+            <Stack direction='row'>
+              <Paper elevation={3} style={{ borderRadius: '20px', padding: '10px', width: '50%' }}>
+                <Stack direction='column' spacing='10px' padding='0px 10px'>
+                  <TextField
+                    fullWidth
+                    label='XOwner'
+                    value={account ?? ''}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                  <Autocomplete
+                    fullWidth
+                    freeSolo
+                    forcePopupIcon
+                    options={assets}
+                    getOptionLabel={option => typeof option === 'string' ? option : option.address}
+                    onChange={(e, v) => setXAssetAddress(typeof v === 'string' ? v : v?.address ?? '')}
+                    renderInput={params => (
+                      <TextField
+                        {...params}
+                        required
+                        label='XAssetAddress'
+                        value={XAssetAddress}
+                        InputProps={{
+                          ...params.InputProps,
+                          readOnly: XAssetDisabled,
+                        }}
+                      />
+                    )}
+                    renderOption={(props, option) => <li {...props}>{typeof option === 'string' ? option : option.displayName}</li>}
+                  />
+                  <TextField
+                    required
+                    fullWidth
+                    label='XAmount'
+                    type='number'
+                    value={XAmount}
+                    onChange={e => setXAmount(e.target.value)}
+                  />
+                </Stack>
+              </Paper>
+              <ArrowForwardIcon style={{
+                margin: 'auto -30px auto -10px',
+                zIndex: 200,
+                fontSize: 40,
+                background: '#121212',
+                backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))',
+                borderRadius: '10px',
+              }} />
+              <Paper elevation={3} style={{ borderRadius: '20px', padding: '10px', width: '50%' }}>
+                <Stack direction='column' spacing='10px' padding='0px 10px'>
+                  <TextField
+                    fullWidth
+                    label='YOwner'
+                    value={YOwner}
+                    onChange={e => setYOwner(e.target.value)}
+                  />
+                  <TextField
+                    required
+                    fullWidth
+                    label='YAssetAddress'
+                    value={YAssetAddress}
+                    onChange={e => setYAssetAddress(e.target.value)}
+                  />
+                  <TextField
+                    required
+                    fullWidth
+                    label='YAmount'
+                    type='number'
+                    value={YAmount}
+                    onChange={e => setYAmount(e.target.value)}
+                  />
+                </Stack>
+              </Paper>
+            </Stack>
             {
               {
                 'create': <Button
@@ -249,9 +244,11 @@ const CreateTradePage: NextPage = () => {
                 </Button>,
               }[buttonStatus]
             }
-          </Grid>
-        </Grid>
-      </FormControl>
+          </Stack>
+        </FormControl>
+      </Paper>
+
+      <footer />
     </Container>
   );
 };

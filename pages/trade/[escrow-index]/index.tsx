@@ -19,10 +19,10 @@ const TradePage: NextPage = () => {
 
   const [escrowData, setEscrowData] = useState<EscrowData | null>(null);
   const addressAllowed = escrowData
-    ? escrowData.YOwner.toLowerCase() === account?.toLowerCase() || escrowData.YOwner === '0x0000000000000000000000000000000000000000'
+    ? escrowData.YOwner === account?.toLowerCase() || escrowData.YOwner === '0x0000000000000000000000000000000000000000'
     : false;
   const isOwner = escrowData
-    ? escrowData.XOwner.toLowerCase() === account?.toLowerCase()
+    ? escrowData.XOwner === account?.toLowerCase()
     : false;
 
   useEffect(() => {

@@ -10,7 +10,7 @@ export { Swap2pInterface, ERC20Interface };
 
 export const addressRegexp = /^0x[a-fA-F0-9]{40}$/;
 
-export const swap2pAddress = '0xa63Dc8A11402AAeE75d1e3A4A316868F56a951Dd';
+export const swap2pAddress = '0xa63dc8a11402aaee75d1e3a4a316868f56a951dd';
 
 export const truncateAddress = (address: string) => `${address.substring(0, 6)}...${address.substring(38)}`;
 
@@ -28,11 +28,11 @@ export interface ApiEscrow {
 }
 export const mapApiEscrowToEscrow = (dto: ApiEscrow): EscrowData => ({
     escrowIndex: BigNumber.from(dto.id),
-    XOwner: dto.xAddress,
+    XOwner: dto.xAddress.toLowerCase(),
     XAssetAddress: dto.xAsset,
     XAmount: BigNumber.from(dto.xAmount),
-    YOwner: dto.yAddress,
-    YAssetAddress: dto.yAsset,
+    YOwner: dto.yAddress.toLowerCase(),
+    YAssetAddress: dto.yAsset.toLowerCase(),
     YAmount: BigNumber.from(dto.yAmount),
     closed: dto.closed,
 });
@@ -48,6 +48,6 @@ export const mapApiAssetToAsset = (dto: ApiAsset): AssetData => ({
     displayName: dto.asset,
     price: 0,
     count: BigNumber.from(dto.amount),
-    address: dto.address,
+    address: dto.address.toLowerCase(),
     decimals: dto.decimals,
 });
