@@ -139,16 +139,16 @@ const CreateTradePage: NextPage = () => {
 
       <NavBar />
 
-      <Paper style={{ borderRadius: '20px', marginTop: '80px', padding: '20px', maxWidth: '900px', marginLeft: 'auto', marginRight: 'auto' }}>
+      <Paper style={{ marginTop: '80px', padding: '20px', maxWidth: '900px', marginLeft: 'auto', marginRight: 'auto' }}>
         <FormControl fullWidth component='form'>
           <Stack direction='column'>
             <Typography variant='h4' align='center'><b>Create trade</b></Typography>
             <Stack direction='row'>
-              <Paper elevation={3} style={{ borderRadius: '20px', padding: '10px', width: '50%' }}>
+              <Paper elevation={3} style={{ padding: '10px', width: '50%' }}>
                 <Stack direction='column' spacing='10px' padding='0px 10px'>
                   <TextField
                     fullWidth
-                    label='XOwner'
+                    label='Your address'
                     value={account ?? ''}
                     InputLabelProps={{
                       shrink: true,
@@ -168,7 +168,7 @@ const CreateTradePage: NextPage = () => {
                       <TextField
                         {...params}
                         required
-                        label='XAssetAddress'
+                        label='Your token'
                         value={XAssetAddress}
                         InputProps={{
                           ...params.InputProps,
@@ -181,40 +181,40 @@ const CreateTradePage: NextPage = () => {
                   <TextField
                     required
                     fullWidth
-                    label='XAmount'
+                    label='Your token amount'
                     type='number'
                     value={XAmount}
                     onChange={e => setXAmount(e.target.value)}
                   />
                 </Stack>
               </Paper>
-              <ArrowForwardIcon style={{
+              <Paper elevation={5} style={{
                 margin: 'auto -30px auto -10px',
                 zIndex: 200,
-                fontSize: 40,
-                background: '#121212',
-                backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))',
                 borderRadius: '10px',
-              }} />
-              <Paper elevation={3} style={{ borderRadius: '20px', padding: '10px', width: '50%' }}>
+                height: '40px',
+              }}>
+                <ArrowForwardIcon style={{ fontSize: 40 }} />
+              </Paper>
+              <Paper elevation={3} style={{ padding: '10px', width: '50%' }}>
                 <Stack direction='column' spacing='10px' padding='0px 10px'>
                   <TextField
                     fullWidth
-                    label='YOwner'
+                    label='Desired address'
                     value={YOwner}
                     onChange={e => setYOwner(e.target.value)}
                   />
                   <TextField
                     required
                     fullWidth
-                    label='YAssetAddress'
+                    label='Desired token'
                     value={YAssetAddress}
                     onChange={e => setYAssetAddress(e.target.value)}
                   />
                   <TextField
                     required
                     fullWidth
-                    label='YAmount'
+                    label='Desired token amount'
                     type='number'
                     value={YAmount}
                     onChange={e => setYAmount(e.target.value)}

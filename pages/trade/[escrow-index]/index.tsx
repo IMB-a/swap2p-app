@@ -9,7 +9,7 @@ import { useMetaMask } from 'metamask-react';
 import { Escrow, EscrowData, NavBar } from '@components';
 
 import { ERC20Interface, swap2pAddress, Swap2pInterface } from 'utils';
-import { Button, Container, Typography } from '@mui/material';
+import { Box, Button, Container, Typography } from '@mui/material';
 import { BigNumber, providers } from 'ethers';
 
 const TradePage: NextPage = () => {
@@ -87,7 +87,7 @@ const TradePage: NextPage = () => {
   };
 
   return (
-    <material.Container>
+    <Container>
       <Head>
         <title>Swap2p - Escrow</title>
         <meta name="description" content="Swap2p escrow service" />
@@ -105,7 +105,7 @@ const TradePage: NextPage = () => {
       {
         escrowData
           ?
-          <Container>
+          <Box>
             <Button disabled={escrowData.closed || !addressAllowed} onClick={onAcceptClick}>
               <Typography>
                 Accept
@@ -116,10 +116,10 @@ const TradePage: NextPage = () => {
                 Reject
               </Typography>
             </Button>
-          </Container>
+          </Box>
           : null
       }
-    </material.Container>
+    </Container>
   );
 };
 

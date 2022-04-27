@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import axios from 'axios';
-import { Backdrop, CircularProgress, Container } from '@mui/material';
+import { Backdrop, Box, CircularProgress, Container } from '@mui/material';
 
 import { useMetaMask } from 'metamask-react';
 
@@ -55,9 +55,9 @@ const TradeHistoryPage: NextPage = () => {
 
       <NavBar />
 
-      <Container style={{ display: status === 'connected' ? 'flex' : 'none' }}>
+      <Box style={{ display: status === 'connected' ? 'flex' : 'none' }}>
         <EscrowTable escrows={escrows} setters={{ setEscrows, setOpenBackdrop }} />
-      </Container>
+      </Box>
     </Container>
   );
 }
