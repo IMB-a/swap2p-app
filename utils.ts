@@ -14,6 +14,11 @@ export const swap2pAddress = '0xa63dc8a11402aaee75d1e3a4a316868f56a951dd';
 
 export const truncateAddress = (address: string) => `${address.substring(0, 6)}...${address.substring(38)}`;
 
+export interface ApiPagination {
+    limit: number;
+    offset: number;
+    total: number;
+}
 export interface ApiEscrow {
     id: number;
     xAddress: string;
@@ -26,6 +31,18 @@ export interface ApiEscrow {
     yDecimals: number;
     closed: boolean;
 }
+export interface ApiAsset {
+    address: string;
+    amount: string;
+    assetFullName: string;
+    assetShortName: string;
+    decimals: number;
+}
+export interface ApiTradesResponse {
+    pagination: ApiPagination;
+    trades: ApiEscrow[];
+}
+
 export const mapApiEscrowToEscrow = (dto: ApiEscrow): EscrowData => ({
     escrowIndex: BigNumber.from(dto.id),
     XOwner: dto.xAddress.toLowerCase(),
@@ -37,15 +54,9 @@ export const mapApiEscrowToEscrow = (dto: ApiEscrow): EscrowData => ({
     closed: dto.closed,
 });
 
-export interface ApiAsset {
-    address: string;
-    amount: string;
-    asset: string;
-    decimals: number;
-}
 export const mapApiAssetToAsset = (dto: ApiAsset): AssetData => ({
-    shortName: '',
-    displayName: dto.asset,
+    shortName: dto.assetShortName,
+    displayName: dto.assetFullName,
     price: 0,
     count: BigNumber.from(dto.amount),
     address: dto.address.toLowerCase(),

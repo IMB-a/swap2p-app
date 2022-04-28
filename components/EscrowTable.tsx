@@ -8,25 +8,27 @@ import { EscrowRow } from './EscrowRow';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { useSnackbar } from 'notistack';
-import { mapApiEscrowToEscrow } from 'utils';
+import { ApiTradesResponse, mapApiEscrowToEscrow } from 'utils';
 
 interface DataSetters {
   setEscrows: Dispatch<SetStateAction<EscrowData[]>>;
   setOpenBackdrop?: Dispatch<SetStateAction<boolean>>;
 }
 
-export const EscrowTable = ({ escrows, setters }: { escrows: EscrowData[], setters: DataSetters }) => {
+export const EscrowTable = ({ maxEscrows, tradeClosed, escrows, setters }: { maxEscrows: number, tradeClosed: boolean, escrows: EscrowData[], setters: DataSetters }) => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [page, setPage] = useState(0);
   const prevPageAvailable = page > 0;
-  const nextPageAvailable = escrows.length == 10;
+  const nextPageAvailable = (page + 1) * 10 < maxEscrows;
 
   const getEscrows = async (page: number) => {
     try {
       if (setters.setOpenBackdrop) setters.setOpenBackdrop(true);
-      const { data } = await axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + `/api/trades?offset=${page * 10}&limit=10&tradeClosed=false`);
-      setters.setEscrows(data.map(mapApiEscrowToEscrow));
+      const { data }: { data: ApiTradesResponse } = await axios.get(
+        process.env.NEXT_PUBLIC_BACKEND_BASE_URL + `/api/trades?offset=${page * 10}&limit=10&tradeClosed=${tradeClosed}`
+      );
+      setters.setEscrows(data.trades.map(mapApiEscrowToEscrow));
     } catch (error) {
       enqueueSnackbar('Something went wrong :(', { variant: 'error' });
     } finally {

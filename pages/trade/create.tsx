@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { Autocomplete, Backdrop, Button, CircularProgress, ClickAwayListener, Container, Dialog, Divider, FormControl, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Button, CircularProgress, Container, FormControl, IconButton, InputAdornment, Paper, Stack, TextField, Typography } from '@mui/material';
 
 import { useMetaMask } from 'metamask-react';
 
-import { AssetData, NavBar } from '@components';
+import { AssetData, NavBar, SelectTokenDialog } from '@components';
 
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
@@ -27,7 +27,8 @@ const CreateTradePage: NextPage = () => {
   const [YAssetAddress, setYAssetAddress] = useState('');
   const [YAmount, setYAmount] = useState('');
 
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogXOpen, setDialogXOpen] = useState(false);
+  const [dialogYOpen, setDialogYOpen] = useState(false);
   const [assets, setAssets] = useState([] as AssetData[]);
 
   const [buttonStatus, setButtonStatus] = useState<'create' | 'in_progress' | 'completed'>('create');
@@ -69,9 +70,6 @@ const CreateTradePage: NextPage = () => {
     setXAmount(YAmount);
     setYAssetAddress(XAssetAddress);
     setYAmount(XAmount);
-  }
-  const handleSelectToken = () => {
-    setDialogOpen(true);
   }
   const handleSubmit = async () => {
     try {
@@ -149,8 +147,8 @@ const CreateTradePage: NextPage = () => {
           <Stack direction='column'>
             <Typography variant='h4' align='center'><b>Create trade</b></Typography>
             <Stack direction='column'>
-              <Paper elevation={3} style={{ padding: '10px 0px' }}>
-                <Stack direction='column' spacing='10px' padding='10px'>
+              <Paper elevation={3} style={{ padding: '20px 10px' }}>
+                <Stack direction='column'>
                   <TextField
                     required
                     fullWidth
@@ -160,7 +158,7 @@ const CreateTradePage: NextPage = () => {
                     onChange={e => setXAmount(e.target.value)}
                     InputProps={{
                       endAdornment: <InputAdornment position='end'>
-                        <Button endIcon={<ArrowDropDownIcon />} onClick={handleSelectToken}>
+                        <Button endIcon={<ArrowDropDownIcon />} onClick={() => setDialogXOpen(true)}>
                           <Typography>Select</Typography>
                         </Button>
                       </InputAdornment>
@@ -180,14 +178,8 @@ const CreateTradePage: NextPage = () => {
                   <SwapVertIcon viewBox='-2 -2 28 28' style={{ fontSize: 40 }} />
                 </IconButton>
               </Paper>
-              <Paper elevation={3} style={{ padding: '10px 0px' }}>
-                <Stack direction='column' spacing='10px' padding='10px'>
-                  <TextField
-                    fullWidth
-                    placeholder='0x0000...0000'
-                    value={YOwner}
-                    onChange={e => setYOwner(e.target.value)}
-                  />
+              <Paper elevation={3} style={{ padding: '20px 10px' }}>
+                <Stack direction='column'>
                   <TextField
                     required
                     fullWidth
@@ -195,6 +187,19 @@ const CreateTradePage: NextPage = () => {
                     type='number'
                     value={YAmount}
                     onChange={e => setYAmount(e.target.value)}
+                    InputProps={{
+                      endAdornment: <InputAdornment position='end'>
+                        <Button endIcon={<ArrowDropDownIcon />} onClick={() => setDialogYOpen(true)}>
+                          <Typography>Select</Typography>
+                        </Button>
+                      </InputAdornment>
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    placeholder='0x0000...0000'
+                    value={YOwner}
+                    onChange={e => setYOwner(e.target.value)}
                   />
                 </Stack>
               </Paper>
@@ -225,61 +230,8 @@ const CreateTradePage: NextPage = () => {
         </FormControl>
       </Paper>
 
-      <Dialog
-        open={dialogOpen}
-        style={{ zIndex: 300 }}
-        onClose={() => setDialogOpen(false)}
-        PaperProps={{
-          style: { padding: '0px', width: '400px' },
-        }}
-      >
-        {/* <Autocomplete
-          fullWidth
-          freeSolo
-          forcePopupIcon
-          options={assets}
-          value={XAssetAddress}
-          getOptionLabel={option => typeof option === 'string' ? option : option.address}
-          onChange={(e, v) => setXAssetAddress(typeof v === 'string' ? v : v?.address ?? '')}
-          isOptionEqualToValue={(o, v) => o.address === v.address}
-          renderInput={params => (
-            <TextField
-              {...params}
-              required
-              placeholder='0x0000...0000'
-              value={XAssetAddress}
-              InputProps={{
-                ...params.InputProps,
-              }}
-            />
-          )}
-          renderOption={(props, option) => <li {...props}>{typeof option === 'string' ? option : option.displayName}</li>}
-        /> */}
-        <TextField
-          fullWidth
-          placeholder='0x0000...0000'
-          // value={YOwner}
-          // onChange={e => setYOwner(e.target.value)}
-        />
-        <Divider />
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton>
-              <ListItemText primary='abc' />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton>
-              <ListItemText primary='abc' />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton>
-              <ListItemText primary='abc' />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Dialog>
+      <SelectTokenDialog open={dialogXOpen} onClose={() => setDialogXOpen(false)} assets={assets} tokenSetter={setXAssetAddress} />
+      <SelectTokenDialog open={dialogYOpen} onClose={() => setDialogYOpen(false)} assets={assets} tokenSetter={setYAssetAddress} />
 
       <footer />
     </Container>

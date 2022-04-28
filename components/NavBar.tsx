@@ -49,7 +49,7 @@ export const NavBar = () => {
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
             </Box>,
             'notConnected': <Box style={{ padding: '0px 20px' }} display='flex'>
-              <Button onClick={connect}>Connect to MetaMask</Button>
+              <Button onClick={connect}><Typography variant='h6'>Connect to MetaMask</Typography></Button>
             </Box>,
             'connecting': <Box style={{ padding: '0px 20px' }}>
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>

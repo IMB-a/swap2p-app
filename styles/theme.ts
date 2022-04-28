@@ -1,11 +1,8 @@
-import { createTheme } from '@mui/material';
+import { createTheme, ThemeOptions } from '@mui/material';
 
 const defaultBorderRadius = '20px';
 
-const theme = createTheme({
-    palette: {
-        mode: 'dark',
-    },
+const componentsOverride: ThemeOptions = {
     components: {
         MuiCssBaseline: {
             styleOverrides: {
@@ -24,6 +21,7 @@ const theme = createTheme({
         MuiOutlinedInput: {
             styleOverrides: {
                 root: {
+                    padding: '0px',
                     borderRadius: defaultBorderRadius,
                 },
                 notchedOutline: {
@@ -39,6 +37,7 @@ const theme = createTheme({
             defaultProps: {
                 style: {
                     alignItems: 'stretch',
+                    padding: '0px',
                 },
                 spacing: '20px',
             },
@@ -60,6 +59,22 @@ const theme = createTheme({
             },
         },
     },
-});
+};
 
-export default theme;
+export const darkTheme = createTheme({
+    palette: { mode: 'dark' },
+}, componentsOverride);
+
+export const lightTheme = createTheme({
+    palette: { mode: 'light' },
+}, componentsOverride, {
+    components: {
+        MuiCssBaseline: {
+            styleOverrides: {
+                body: {
+                    background: 'linear-gradient(165deg, #E673E6, #AB73E6, #E673E6, #7374E6, #E673E6, #AB73E6)',
+                },
+            },
+        },
+    },
+} as ThemeOptions);
