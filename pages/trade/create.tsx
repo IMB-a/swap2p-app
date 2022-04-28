@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { Button, CircularProgress, Container, FormControl, IconButton, InputAdornment, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Button, CircularProgress, Container, FormControl, IconButton, InputAdornment, MenuItem, Paper, Select, Stack, TextField, Typography } from '@mui/material';
 
 import { useMetaMask } from 'metamask-react';
 
@@ -10,10 +10,11 @@ import { AssetData, NavBar, SelectTokenDialog } from '@components';
 
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
-import { Swap2p20_20Interface, addressRegexp, ERC20Interface, swap2p20_20Address, mapApiAssetToAsset } from 'utils';
+import { Swap2p20_20Interface, addressRegexp, ERC20Interface, swap2p20_20Address, mapApiAssetToAsset, contractType, allContractTypes, contractTypeToString, splitContractType, tokenTypePlaceholders } from 'utils';
 import { useSnackbar } from 'notistack';
-import { utils, providers } from 'ethers';
+import { utils, providers, BigNumber } from 'ethers';
 import axios from 'axios';
+import { handle } from 'contractHandlers';
 
 const CreateTradePage: NextPage = () => {
   const router = useRouter();
@@ -22,16 +23,18 @@ const CreateTradePage: NextPage = () => {
 
   const YOwnerDefault = '0x0000000000000000000000000000000000000000';
   const [XAssetAddress, setXAssetAddress] = useState('');
-  const [XAmount, setXAmount] = useState('');
-  const [YOwner, setYOwner] = useState('');
+  const [XAmountOrId, setXAmount] = useState('');
   const [YAssetAddress, setYAssetAddress] = useState('');
-  const [YAmount, setYAmount] = useState('');
+  const [YAmountOrId, setYAmount] = useState('');
+  const [YOwner, setYOwner] = useState('');
 
+  const [contract, setContract] = useState<contractType>('20_20');
   const [dialogXOpen, setDialogXOpen] = useState(false);
   const [dialogYOpen, setDialogYOpen] = useState(false);
   const [assets, setAssets] = useState([] as AssetData[]);
-
   const [buttonStatus, setButtonStatus] = useState<'create' | 'in_progress' | 'completed'>('create');
+
+  const [t1, t2] = splitContractType(contract);
 
   useEffect(() => {
     if (!router.isReady || status !== 'connected') return;
@@ -60,74 +63,49 @@ const CreateTradePage: NextPage = () => {
   }, [router.isReady, status]);
 
   const XAssetAddressMatch = XAssetAddress.match(addressRegexp);
-  const YOwnerMatch = YOwner.length ? YOwner.match(addressRegexp) : true;
   const YAssetAddressMatch = YAssetAddress.match(addressRegexp);
+  const YOwnerMatch = YOwner.length ? YOwner.match(addressRegexp) : true;
 
-  const canCreate = Boolean(XAssetAddressMatch && XAmount !== '' && YOwnerMatch && YAssetAddressMatch && YAmount !== '');
+  const canCreate = Boolean(
+    XAssetAddressMatch && XAmountOrId !== '' &&
+    YAssetAddressMatch && YAmountOrId !== '' && YOwnerMatch
+  );
+
+  const resetArgs = () => {
+    setXAssetAddress('');
+    setXAmount('');
+    setYAssetAddress('');
+    setYAmount('');
+    setYOwner('');
+  }
 
   const handleSwapAssets = () => {
     setXAssetAddress(YAssetAddress);
-    setXAmount(YAmount);
+    setXAmount(YAmountOrId);
     setYAssetAddress(XAssetAddress);
-    setYAmount(XAmount);
+    setYAmount(XAmountOrId);
   }
   const handleSubmit = async () => {
     try {
       setButtonStatus('in_progress');
 
-      let tx;
-      const provider = new providers.Web3Provider(ethereum)
       const XAsset = assets.find(a => a.address.toLowerCase() === XAssetAddress.toLowerCase());
       const YAsset = assets.find(a => a.address.toLowerCase() === YAssetAddress.toLowerCase());
-      const XAmountPenny = utils.parseUnits(XAmount, XAsset?.decimals ?? 18);
-      const YAmountPenny = utils.parseUnits(YAmount, YAsset?.decimals ?? 18);
+      const XArg = {
+        '20': (() => utils.parseUnits(XAmountOrId, XAsset?.decimals ?? 18)),
+        '721': (() => BigNumber.from(XAmountOrId)),
+      }[t1]();
+      const YArg = {
+        '20': (() => utils.parseUnits(YAmountOrId, YAsset?.decimals ?? 18)),
+        '721': (() => BigNumber.from(YAmountOrId)),
+      }[t2]();
 
-      const approveData = ERC20Interface.encodeFunctionData('approve', [swap2p20_20Address, XAmountPenny]);
-      tx = await ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          to: XAssetAddress,
-          from: ethereum.selectedAddress,
-          chainId: chainId,
-          data: approveData,
-        }],
-      });
-
-      await provider.waitForTransaction(tx);
-
-      // get fee
-      const getFeeData = Swap2p20_20Interface.encodeFunctionData('fee', []);
-      const feeData = await ethereum.request({
-        method: 'eth_call',
-        params: [{
-          to: swap2p20_20Address,
-          from: ethereum.selectedAddress,
-          chainId: chainId,
-          data: getFeeData,
-        }, 'latest'],
-      });
-
-      const [fee] = Swap2p20_20Interface.decodeFunctionResult('fee', feeData);
-      const escrowData = Swap2p20_20Interface.encodeFunctionData(
-        'createEscrow',
-        [XAssetAddress, XAmountPenny, YAssetAddress, YAmountPenny, YOwner.length ? YOwner : YOwnerDefault],
-      );
-      tx = await ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          to: swap2p20_20Address,
-          from: ethereum.selectedAddress,
-          chainId: chainId,
-          value: fee.toString(),
-          data: escrowData,
-        }],
-      });
-
-      await provider.waitForTransaction(tx);
+      await handle(contract, ethereum, chainId ?? '', [XAssetAddress, XArg, YAssetAddress, YArg, YOwner.length ? YOwner : YOwnerDefault]);
 
       setButtonStatus('completed');
     } catch (error) {
       setButtonStatus('create');
+      console.log(error)
       enqueueSnackbar('Something went wrong :(', { variant: 'error' });
     }
   };
@@ -145,18 +123,27 @@ const CreateTradePage: NextPage = () => {
       <Paper style={{ marginTop: '80px', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
         <FormControl fullWidth component='form'>
           <Stack direction='column'>
-            <Typography variant='h4' align='center'><b>Create trade</b></Typography>
+            <Stack direction='row' justifyContent='space-between'>
+              <Typography variant='h4' align='center'><b>Create trade</b></Typography>
+              <Select
+                value={contract}
+                onChange={(e) => { resetArgs(); setContract(e.target.value as contractType); }}
+              >
+                {allContractTypes.map(t => (<MenuItem value={t} key={t}>{contractTypeToString(t)}</MenuItem>))}
+              </Select>
+            </Stack>
             <Stack direction='column'>
               <Paper elevation={3} style={{ padding: '20px 10px' }}>
                 <Stack direction='column'>
                   <TextField
                     required
                     fullWidth
-                    placeholder='0.0'
+                    placeholder={tokenTypePlaceholders[t1]}
                     type='number'
-                    value={XAmount}
+                    value={XAmountOrId}
                     onChange={e => setXAmount(e.target.value)}
                     InputProps={{
+                      autoComplete: 'off',
                       endAdornment: <InputAdornment position='end'>
                         <Button endIcon={<ArrowDropDownIcon />} onClick={() => setDialogXOpen(true)}>
                           <Typography>Select</Typography>
@@ -183,11 +170,12 @@ const CreateTradePage: NextPage = () => {
                   <TextField
                     required
                     fullWidth
-                    placeholder='0.0'
+                    placeholder={tokenTypePlaceholders[t2]}
                     type='number'
-                    value={YAmount}
+                    value={YAmountOrId}
                     onChange={e => setYAmount(e.target.value)}
                     InputProps={{
+                      autoComplete: 'off',
                       endAdornment: <InputAdornment position='end'>
                         <Button endIcon={<ArrowDropDownIcon />} onClick={() => setDialogYOpen(true)}>
                           <Typography>Select</Typography>
@@ -230,8 +218,8 @@ const CreateTradePage: NextPage = () => {
         </FormControl>
       </Paper>
 
-      <SelectTokenDialog open={dialogXOpen} onClose={() => setDialogXOpen(false)} assets={assets} tokenSetter={setXAssetAddress} />
-      <SelectTokenDialog open={dialogYOpen} onClose={() => setDialogYOpen(false)} assets={assets} tokenSetter={setYAssetAddress} />
+      <SelectTokenDialog open={dialogXOpen} close={() => setDialogXOpen(false)} assets={assets} tokenSetter={setXAssetAddress} />
+      <SelectTokenDialog open={dialogYOpen} close={() => setDialogYOpen(false)} assets={assets} tokenSetter={setYAssetAddress} />
 
       <footer />
     </Container>
