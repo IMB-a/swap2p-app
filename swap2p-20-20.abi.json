@@ -361,7 +361,7 @@
                         "type": "bool"
                     }
                 ],
-                "internalType": "struct Swap2p.Escrow",
+                "internalType": "struct Escrow20To20.Escrow",
                 "name": "",
                 "type": "tuple"
             }

@@ -10,7 +10,7 @@ import { AssetData, NavBar, SelectTokenDialog } from '@components';
 
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
-import { Swap2pInterface, addressRegexp, ERC20Interface, swap2pAddress, mapApiAssetToAsset } from 'utils';
+import { Swap2p20_20Interface, addressRegexp, ERC20Interface, swap2p20_20Address, mapApiAssetToAsset } from 'utils';
 import { useSnackbar } from 'notistack';
 import { utils, providers } from 'ethers';
 import axios from 'axios';
@@ -82,7 +82,7 @@ const CreateTradePage: NextPage = () => {
       const XAmountPenny = utils.parseUnits(XAmount, XAsset?.decimals ?? 18);
       const YAmountPenny = utils.parseUnits(YAmount, YAsset?.decimals ?? 18);
 
-      const approveData = ERC20Interface.encodeFunctionData('approve', [swap2pAddress, XAmountPenny]);
+      const approveData = ERC20Interface.encodeFunctionData('approve', [swap2p20_20Address, XAmountPenny]);
       tx = await ethereum.request({
         method: 'eth_sendTransaction',
         params: [{
@@ -96,26 +96,26 @@ const CreateTradePage: NextPage = () => {
       await provider.waitForTransaction(tx);
 
       // get fee
-      const getFeeData = Swap2pInterface.encodeFunctionData('fee', []);
+      const getFeeData = Swap2p20_20Interface.encodeFunctionData('fee', []);
       const feeData = await ethereum.request({
         method: 'eth_call',
         params: [{
-          to: swap2pAddress,
+          to: swap2p20_20Address,
           from: ethereum.selectedAddress,
           chainId: chainId,
           data: getFeeData,
         }, 'latest'],
       });
 
-      const [fee] = Swap2pInterface.decodeFunctionResult('fee', feeData);
-      const escrowData = Swap2pInterface.encodeFunctionData(
+      const [fee] = Swap2p20_20Interface.decodeFunctionResult('fee', feeData);
+      const escrowData = Swap2p20_20Interface.encodeFunctionData(
         'createEscrow',
         [XAssetAddress, XAmountPenny, YAssetAddress, YAmountPenny, YOwner.length ? YOwner : YOwnerDefault],
       );
       tx = await ethereum.request({
         method: 'eth_sendTransaction',
         params: [{
-          to: swap2pAddress,
+          to: swap2p20_20Address,
           from: ethereum.selectedAddress,
           chainId: chainId,
           value: fee.toString(),

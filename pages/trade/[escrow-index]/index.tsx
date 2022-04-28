@@ -8,7 +8,7 @@ import { useMetaMask } from 'metamask-react';
 
 import { Escrow, EscrowData, NavBar } from '@components';
 
-import { ERC20Interface, swap2pAddress, Swap2pInterface } from 'utils';
+import { ERC20Interface, swap2p20_20Address, Swap2p20_20Interface } from 'utils';
 import { Box, Button, Container, Typography } from '@mui/material';
 import { BigNumber, providers } from 'ethers';
 
@@ -30,17 +30,17 @@ const TradePage: NextPage = () => {
       return;
     }
 
-    const escrowGetData = Swap2pInterface.encodeFunctionData('getEscrow', [escrowIndex]);
+    const escrowGetData = Swap2p20_20Interface.encodeFunctionData('getEscrow', [escrowIndex]);
     const getEscrowPromise = ethereum.request({
       method: 'eth_call',
       params: [{
-        to: swap2pAddress,
+        to: swap2p20_20Address,
         from: ethereum.selectedAddress,
         chainId: chainId,
         data: escrowGetData,
       }, 'latest'],
     }).then((data: string) => {
-      const [XOwner, XAssetAddress, XAmount, YOwner, YAssetAddress, YAmount, closed] = Swap2pInterface.decodeFunctionResult('getEscrow', data)[0];
+      const [XOwner, XAssetAddress, XAmount, YOwner, YAssetAddress, YAmount, closed] = Swap2p20_20Interface.decodeFunctionResult('getEscrow', data)[0];
       setEscrowData({ escrowIndex: BigNumber.from(escrowIndex), XOwner, XAssetAddress, XAmount, YOwner, YAssetAddress, YAmount, closed });
     });
   }, [router.isReady, status]);
@@ -49,7 +49,7 @@ const TradePage: NextPage = () => {
     const provider = new providers.Web3Provider(ethereum)
 
     let tx;
-    const approveData = ERC20Interface.encodeFunctionData('approve', [swap2pAddress, escrowData!.YAmount]);
+    const approveData = ERC20Interface.encodeFunctionData('approve', [swap2p20_20Address, escrowData!.YAmount]);
     tx = await ethereum.request({
       method: 'eth_sendTransaction',
       params: [{
@@ -62,11 +62,11 @@ const TradePage: NextPage = () => {
 
     await provider.waitForTransaction(tx);
 
-    const acceptData = Swap2pInterface.encodeFunctionData('acceptEscrow', [escrowIndex]);
+    const acceptData = Swap2p20_20Interface.encodeFunctionData('acceptEscrow', [escrowIndex]);
     tx = await ethereum.request({
       method: 'eth_sendTransaction',
       params: [{
-        to: swap2pAddress,
+        to: swap2p20_20Address,
         from: ethereum.selectedAddress,
         chainId: chainId,
         data: acceptData,
@@ -74,11 +74,11 @@ const TradePage: NextPage = () => {
     });
   };
   const onCancelClick = async () => {
-    const cancelData = Swap2pInterface.encodeFunctionData('cancelEscrow', [escrowIndex]);
+    const cancelData = Swap2p20_20Interface.encodeFunctionData('cancelEscrow', [escrowIndex]);
     await ethereum.request({
       method: 'eth_sendTransaction',
       params: [{
-        to: swap2pAddress,
+        to: swap2p20_20Address,
         from: ethereum.selectedAddress,
         chainId: chainId,
         data: cancelData,
