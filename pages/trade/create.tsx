@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { Autocomplete, Button, CircularProgress, Container, FormControl, Paper, SelectChangeEvent, Stack, TextField, Typography } from '@mui/material';
+import { Autocomplete, Backdrop, Button, CircularProgress, ClickAwayListener, Container, Dialog, Divider, FormControl, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, Paper, Stack, TextField, Typography } from '@mui/material';
 
 import { useMetaMask } from 'metamask-react';
 
 import { AssetData, NavBar } from '@components';
 
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
 import { Swap2pInterface, addressRegexp, ERC20Interface, swap2pAddress, mapApiAssetToAsset } from 'utils';
 import { useSnackbar } from 'notistack';
 import { utils, providers } from 'ethers';
@@ -26,7 +27,7 @@ const CreateTradePage: NextPage = () => {
   const [YAssetAddress, setYAssetAddress] = useState('');
   const [YAmount, setYAmount] = useState('');
 
-  const [XAssetDisabled, setXAssetDisabled] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [assets, setAssets] = useState([] as AssetData[]);
 
   const [buttonStatus, setButtonStatus] = useState<'create' | 'in_progress' | 'completed'>('create');
@@ -63,11 +64,15 @@ const CreateTradePage: NextPage = () => {
 
   const canCreate = Boolean(XAssetAddressMatch && XAmount !== '' && YOwnerMatch && YAssetAddressMatch && YAmount !== '');
 
-  const handleSelectAsset = (event: SelectChangeEvent) => {
-    const address = event.target.value;
-    setXAssetAddress(address);
-    setXAssetDisabled(address !== '');
-  };
+  const handleSwapAssets = () => {
+    setXAssetAddress(YAssetAddress);
+    setXAmount(YAmount);
+    setYAssetAddress(XAssetAddress);
+    setYAmount(XAmount);
+  }
+  const handleSelectToken = () => {
+    setDialogOpen(true);
+  }
   const handleSubmit = async () => {
     try {
       setButtonStatus('in_progress');
@@ -139,82 +144,54 @@ const CreateTradePage: NextPage = () => {
 
       <NavBar />
 
-      <Paper style={{ marginTop: '80px', padding: '20px', maxWidth: '900px', marginLeft: 'auto', marginRight: 'auto' }}>
+      <Paper style={{ marginTop: '80px', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
         <FormControl fullWidth component='form'>
           <Stack direction='column'>
             <Typography variant='h4' align='center'><b>Create trade</b></Typography>
-            <Stack direction='row'>
-              <Paper elevation={3} style={{ padding: '10px', width: '50%' }}>
-                <Stack direction='column' spacing='10px' padding='0px 10px'>
-                  <TextField
-                    fullWidth
-                    label='Your address'
-                    value={account ?? ''}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                  />
-                  <Autocomplete
-                    fullWidth
-                    freeSolo
-                    forcePopupIcon
-                    options={assets}
-                    getOptionLabel={option => typeof option === 'string' ? option : option.address}
-                    onChange={(e, v) => setXAssetAddress(typeof v === 'string' ? v : v?.address ?? '')}
-                    renderInput={params => (
-                      <TextField
-                        {...params}
-                        required
-                        label='Your token'
-                        value={XAssetAddress}
-                        InputProps={{
-                          ...params.InputProps,
-                          readOnly: XAssetDisabled,
-                        }}
-                      />
-                    )}
-                    renderOption={(props, option) => <li {...props}>{typeof option === 'string' ? option : option.displayName}</li>}
-                  />
+            <Stack direction='column'>
+              <Paper elevation={3} style={{ padding: '10px 0px' }}>
+                <Stack direction='column' spacing='10px' padding='10px'>
                   <TextField
                     required
                     fullWidth
-                    label='Your token amount'
+                    placeholder='0.0'
                     type='number'
                     value={XAmount}
                     onChange={e => setXAmount(e.target.value)}
+                    InputProps={{
+                      endAdornment: <InputAdornment position='end'>
+                        <Button endIcon={<ArrowDropDownIcon />} onClick={handleSelectToken}>
+                          <Typography>Select</Typography>
+                        </Button>
+                      </InputAdornment>
+                    }}
                   />
                 </Stack>
               </Paper>
               <Paper elevation={5} style={{
-                margin: 'auto -30px auto -10px',
+                margin: '-10px auto -30px auto',
+                padding: '0px',
                 zIndex: 200,
                 borderRadius: '10px',
                 height: '40px',
+                width: '40px',
               }}>
-                <ArrowForwardIcon style={{ fontSize: 40 }} />
+                <IconButton onClick={handleSwapAssets} disableRipple style={{ width: '40px', height: '40px' }}>
+                  <SwapVertIcon viewBox='-2 -2 28 28' style={{ fontSize: 40 }} />
+                </IconButton>
               </Paper>
-              <Paper elevation={3} style={{ padding: '10px', width: '50%' }}>
-                <Stack direction='column' spacing='10px' padding='0px 10px'>
+              <Paper elevation={3} style={{ padding: '10px 0px' }}>
+                <Stack direction='column' spacing='10px' padding='10px'>
                   <TextField
                     fullWidth
-                    label='Desired address'
+                    placeholder='0x0000...0000'
                     value={YOwner}
                     onChange={e => setYOwner(e.target.value)}
                   />
                   <TextField
                     required
                     fullWidth
-                    label='Desired token'
-                    value={YAssetAddress}
-                    onChange={e => setYAssetAddress(e.target.value)}
-                  />
-                  <TextField
-                    required
-                    fullWidth
-                    label='Desired token amount'
+                    placeholder='0.0'
                     type='number'
                     value={YAmount}
                     onChange={e => setYAmount(e.target.value)}
@@ -247,6 +224,62 @@ const CreateTradePage: NextPage = () => {
           </Stack>
         </FormControl>
       </Paper>
+
+      <Dialog
+        open={dialogOpen}
+        style={{ zIndex: 300 }}
+        onClose={() => setDialogOpen(false)}
+        PaperProps={{
+          style: { padding: '0px', width: '400px' },
+        }}
+      >
+        {/* <Autocomplete
+          fullWidth
+          freeSolo
+          forcePopupIcon
+          options={assets}
+          value={XAssetAddress}
+          getOptionLabel={option => typeof option === 'string' ? option : option.address}
+          onChange={(e, v) => setXAssetAddress(typeof v === 'string' ? v : v?.address ?? '')}
+          isOptionEqualToValue={(o, v) => o.address === v.address}
+          renderInput={params => (
+            <TextField
+              {...params}
+              required
+              placeholder='0x0000...0000'
+              value={XAssetAddress}
+              InputProps={{
+                ...params.InputProps,
+              }}
+            />
+          )}
+          renderOption={(props, option) => <li {...props}>{typeof option === 'string' ? option : option.displayName}</li>}
+        /> */}
+        <TextField
+          fullWidth
+          placeholder='0x0000...0000'
+          // value={YOwner}
+          // onChange={e => setYOwner(e.target.value)}
+        />
+        <Divider />
+        <List>
+          <ListItem disablePadding>
+            <ListItemButton>
+              <ListItemText primary='abc' />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton>
+              <ListItemText primary='abc' />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton>
+              <ListItemText primary='abc' />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      </Dialog>
 
       <footer />
     </Container>

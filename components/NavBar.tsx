@@ -23,7 +23,7 @@ export const NavBar = () => {
   }
 
   return (
-    <AppBar position="static" style={{ borderRadius: '0px' }}>
+    <AppBar position="static">
       <Toolbar disableGutters>
         <Typography
           variant="h6"

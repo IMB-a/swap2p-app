@@ -11,8 +11,8 @@ const theme = createTheme({
             styleOverrides: {
                 body: {
                     height: '100vh',
-                    background: 'linear-gradient(165deg, #1A0D1A, #1A0D0D, #1A0D1A, #0D0D1A, #1A0D1A, #1A0D0D, #1A0D1A, #0D0D1A)',
-                    backgroundSize: '233% 233%',
+                    background: 'linear-gradient(165deg, #1A0D1A, #1A0D0D, #1A0D1A, #0D0D1A, #1A0D1A, #1A0D0D)',
+                    backgroundSize: '500% 500%',
                     animation: 'anim 8s linear infinite',
                     '@keyframes anim': {
                         '0%': { backgroundPosition: '0% 0%' },
@@ -26,12 +26,12 @@ const theme = createTheme({
                 root: {
                     borderRadius: defaultBorderRadius,
                 },
-            },
-        },
-        MuiGrid: {
-            styleOverrides: {
-                root: {
-                    padding: '5px',
+                notchedOutline: {
+                    borderStyle: 'none',
+                },
+                input: {
+                    padding: '0px 14px',
+                    fontSize: 20,
                 },
             },
         },
@@ -46,7 +46,16 @@ const theme = createTheme({
         MuiPaper: {
             styleOverrides: {
                 root: {
+                    padding: '20px',
                     borderRadius: '20px',
+                },
+            },
+        },
+        MuiAppBar: {
+            styleOverrides: {
+                root: {
+                    padding: '10px',
+                    borderRadius: '0px',
                 },
             },
         },
