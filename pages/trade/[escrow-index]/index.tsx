@@ -9,7 +9,7 @@ import { useMetaMask } from 'metamask-react';
 import { Escrow, EscrowData, NavBar } from '@components';
 
 import { allContractTypes, contractType, ERC20Interface, swap2p20_20Address, Swap2p20_20Interface, swap2pAddresses, swap2pInterfaces } from 'utils';
-import { Box, Button, Container, Typography } from '@mui/material';
+import { Box, Button, Container, Skeleton, Typography } from '@mui/material';
 import { BigNumber, providers } from 'ethers';
 import { useSnackbar } from 'notistack';
 
@@ -112,7 +112,7 @@ const TradePage: NextPage = () => {
       {
         escrowData
           ? <Escrow data={escrowData} />
-          : <material.Skeleton variant='rectangular' width={200} height={80} />
+          : <Skeleton variant='rectangular' width={200} height={80} />
       }
 
       {

@@ -46,7 +46,7 @@ export const ercInterfaces: Record<tokenType, Interface> = {
 export const swap2p20_20Address = '0xC4EeBde7F673d1257d4716E9D91B7A7F5F281B89';
 export const swap2p20_721Address = '0x736F506BD10A1c67390cb16eDB667e9f2Fdc8479';
 export const swap2p721_20Address = '0x43EbbeEeB7D56e2FAA412a0307cF45AcC438d4F3';
-export const swap2p721_721Address = '0x7Ce90C750AAB0034ADc7338135912695DA452Ef7';
+export const swap2p721_721Address = '0xb8f2524b434A2F1c031029be9aC63F8FEB1343f6';
 export const sppTokenAddress = '0x57a5ac17906491be6609cee8eab5730f67790717';
 
 export const swap2pAddresses: Record<contractType, string> = {

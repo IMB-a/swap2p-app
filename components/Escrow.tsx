@@ -36,7 +36,7 @@ export const Escrow = ({ data }: { data: EscrowData }) => {
   }[t2];
 
   return (
-    <Card>
+    <Card style={{ marginTop: '80px' }}>
       <CardHeader style={{ backgroundColor: data.closed ? 'green' : 'cyan' }}>
         <Alert severity={ data.closed ? 'success' : 'info' }>
           <Typography>{ data.closed ? 'Closed' : 'Open' }</Typography>
@@ -44,7 +44,7 @@ export const Escrow = ({ data }: { data: EscrowData }) => {
       </CardHeader>
       <CardContent style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', backgroundColor: 'grey' }}>
         <Card style={{ display: 'flex', flexDirection: 'column' }}>
-          <CardContent>
+          <CardContent style={{ padding: '0px' }}>
             <Typography>{data.XOwner}</Typography>
             <Typography sx={{ mb: 1.5 }} color="text.secondary">Owner address</Typography>
             <Typography>{data.XAssetAddress}</Typography>
@@ -54,7 +54,7 @@ export const Escrow = ({ data }: { data: EscrowData }) => {
           </CardContent>
         </Card>
         <Card style={{ display: 'flex', flexDirection: 'column' }}>
-          <CardContent>
+          <CardContent style={{ padding: '0px' }}>
             <Typography>{data.YOwner}</Typography>
             <Typography sx={{ mb: 1.5 }} color="text.secondary">Owner address</Typography>
             <Typography>{data.YAssetAddress}</Typography>

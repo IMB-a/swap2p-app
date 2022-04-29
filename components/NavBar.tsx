@@ -45,11 +45,11 @@ export const NavBar = () => {
           open={open}
           onClose={() => setAnchorEl(null)}
         >
-          <MenuItem><Button onClick={handleMyAssets}><Typography color='white' gutterBottom variant='body1' component='div'><b>My assets</b></Typography></Button></MenuItem>
-          <MenuItem><Button onClick={handleCreateTrade}><Typography color='white' gutterBottom variant='body1' component='div'><b>Create trade</b></Typography></Button></MenuItem>
-          <MenuItem><Button onClick={handleTradeList}><Typography color='white' gutterBottom variant='body1' component='div'><b>Trade list</b></Typography></Button></MenuItem>
-          <MenuItem><Button onClick={handleTradeHistory}><Typography color='white' gutterBottom variant='body1' component='div'><b>Trade history</b></Typography></Button></MenuItem>
-          <MenuItem><Button onClick={handleFaucet}><Typography color='white' gutterBottom variant='body1' component='div'><b>Faucet</b></Typography></Button></MenuItem>
+          <MenuItem onClick={handleMyAssets}><Typography color='white' gutterBottom variant='body1' component='div'><b>My assets</b></Typography></MenuItem>
+          <MenuItem onClick={handleCreateTrade}><Typography color='white' gutterBottom variant='body1' component='div'><b>Create trade</b></Typography></MenuItem>
+          <MenuItem onClick={handleTradeList}><Typography color='white' gutterBottom variant='body1' component='div'><b>Trade list</b></Typography></MenuItem>
+          <MenuItem onClick={handleTradeHistory}><Typography color='white' gutterBottom variant='body1' component='div'><b>Trade history</b></Typography></MenuItem>
+          <MenuItem onClick={handleFaucet}><Typography color='white' gutterBottom variant='body1' component='div'><b>Faucet</b></Typography></MenuItem>
         </Menu>
         {
           {

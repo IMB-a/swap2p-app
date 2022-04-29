@@ -25,13 +25,11 @@ export const EscrowRow = (({ data }: { data: EscrowData }) => {
     '721': (() => data.YAmount),
   }[t2]();
 
-  const handleClick = () => {
-    router.push(`/trade/${data.escrowIndex}?escrowType=${data.type}`);
-  };
+  const handleClick = () => router.push(`/trade/${data.escrowIndex}?escrowType=${data.type}`);
 
   return (
     <TableRow hover onClick={handleClick}>
-      <TableCell align='right'>{data.closed ? <CheckCircleIcon color='success' /> : <InfoIcon color='info' /> }</TableCell>
+      <TableCell align='right'>{data.closed ? <CheckCircleIcon color='success' /> : <InfoIcon color='info' />}</TableCell>
       <TableCell align='right'>{truncateAddress(data.XOwner)}</TableCell>
       <TableCell align='right'>{`${truncateAddress(data.XAssetAddress)} (ERC${t1})`}</TableCell>
       <TableCell align='right'>{XArg.toString()}</TableCell>

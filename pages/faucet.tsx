@@ -38,7 +38,7 @@ const Faucet: NextPage = () => {
   const handleGetYToken = () => faucetERC20('0x82e2379179Ba2583B8D2d21FdaDd852Ca8Fa1Be1');
   const handleGetSPPToken = () => faucetERC20('0x57a5ac17906491be6609cee8eab5730f67790717');
   const handleGetXNFT = () => faucetERC721('0x6ebD878E96093c6E881DA212720aD5Ca4F3172b5');
-  const handleGetYNFT = () => faucetERC721('0xC4EeBde7F673d1257d4716E9D91B7A7F5F281B89');
+  const handleGetYNFT = () => faucetERC721('0x7Ce90C750AAB0034ADc7338135912695DA452Ef7');
 
   const addTokenToMetamask = (address: string, symbol: string) => {
     ethereum.request({
