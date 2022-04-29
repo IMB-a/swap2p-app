@@ -10,9 +10,9 @@ import { AssetData, NavBar, SelectTokenDialog } from '@components';
 
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
-import { Swap2p20_20Interface, addressRegexp, ERC20Interface, swap2p20_20Address, mapApiAssetToAsset, contractType, allContractTypes, contractTypeToString, splitContractType, tokenTypePlaceholders } from 'utils';
+import { addressRegexp, mapApiAssetToAsset, contractType, allContractTypes, contractTypeToString, splitContractType, tokenTypePlaceholders } from 'utils';
 import { useSnackbar } from 'notistack';
-import { utils, providers, BigNumber } from 'ethers';
+import { utils, BigNumber } from 'ethers';
 import axios from 'axios';
 import { handle } from 'contractHandlers';
 
@@ -45,6 +45,7 @@ const CreateTradePage: NextPage = () => {
       YOwner: YOwnerQuery,
       YAssetAddress: YAssetAddressQuery,
       YAmount: YAmountQuery,
+      contract: contractQuery,
     } = router.query;
 
     setXAssetAddress(XAssetAddressQuery as string ?? '');
@@ -52,6 +53,7 @@ const CreateTradePage: NextPage = () => {
     setYOwner(YOwnerQuery as string ?? '');
     setYAssetAddress(YAssetAddressQuery as string ?? '');
     setYAmount(YAmountQuery as string ?? '');
+    setContract(contractQuery as contractType ?? '20_20');
 
     const balancePromise = axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + `/api/balance?wallet=${account}`)
       .then(({ data }) => {
@@ -146,7 +148,7 @@ const CreateTradePage: NextPage = () => {
                       autoComplete: 'off',
                       endAdornment: <InputAdornment position='end'>
                         <Button endIcon={<ArrowDropDownIcon />} onClick={() => setDialogXOpen(true)}>
-                          <Typography>Select</Typography>
+                          <Typography>{assets.find(a => a.address === XAssetAddress.toLowerCase())?.shortName ?? 'Select'}</Typography>
                         </Button>
                       </InputAdornment>
                     }}
@@ -178,7 +180,7 @@ const CreateTradePage: NextPage = () => {
                       autoComplete: 'off',
                       endAdornment: <InputAdornment position='end'>
                         <Button endIcon={<ArrowDropDownIcon />} onClick={() => setDialogYOpen(true)}>
-                          <Typography>Select</Typography>
+                          <Typography>{assets.find(a => a.address === YAssetAddress.toLowerCase())?.shortName ?? 'Select'}</Typography>
                         </Button>
                       </InputAdornment>
                     }}
@@ -218,8 +220,8 @@ const CreateTradePage: NextPage = () => {
         </FormControl>
       </Paper>
 
-      <SelectTokenDialog open={dialogXOpen} close={() => setDialogXOpen(false)} assets={assets} tokenSetter={setXAssetAddress} />
-      <SelectTokenDialog open={dialogYOpen} close={() => setDialogYOpen(false)} assets={assets} tokenSetter={setYAssetAddress} />
+      <SelectTokenDialog open={dialogXOpen} close={() => setDialogXOpen(false)} assets={t1 === '20' ? assets : []} tokenSetter={setXAssetAddress} />
+      <SelectTokenDialog open={dialogYOpen} close={() => setDialogYOpen(false)} assets={t2 === '20' ? assets : []} tokenSetter={setYAssetAddress} />
 
       <footer />
     </Container>
