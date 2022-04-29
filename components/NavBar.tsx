@@ -9,18 +9,11 @@ export const NavBar = () => {
   const router = useRouter();
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
-  const handleMyAssets = () => {
-    router.push('/');
-  }
-  const handleCreateTrade = () => {
-    router.push('/trade/create');
-  }
-  const handleTradeList = () => {
-    router.push('/trade/list');
-  }
-  const handleTradeHistory = () => {
-    router.push('/trade/history');
-  }
+  const handleMyAssets = () => router.push('/');
+  const handleFaucet = () => router.push('/faucet');
+  const handleCreateTrade = () => router.push('/trade/create');
+  const handleTradeList = () => router.push('/trade/list');
+  const handleTradeHistory = () => router.push('/trade/history');
 
   return (
     <AppBar position="static">
@@ -39,6 +32,7 @@ export const NavBar = () => {
           <Button onClick={handleCreateTrade}><Typography color='white' gutterBottom variant='body1' component='div'><b>Create trade</b></Typography></Button>
           <Button onClick={handleTradeList}><Typography color='white' gutterBottom variant='body1' component='div'><b>Trade list</b></Typography></Button>
           <Button onClick={handleTradeHistory}><Typography color='white' gutterBottom variant='body1' component='div'><b>Trade history</b></Typography></Button>
+          <Button onClick={handleFaucet}><Typography color='white' gutterBottom variant='body1' component='div'><b>Faucet</b></Typography></Button>
         </Box>
         {
           {
@@ -49,7 +43,7 @@ export const NavBar = () => {
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
             </Box>,
             'notConnected': <Box style={{ padding: '0px 20px' }} display='flex'>
-              <Button onClick={connect}>Connect to MetaMask</Button>
+              <Button onClick={connect}><Typography variant='h6'>Connect to MetaMask</Typography></Button>
             </Box>,
             'connecting': <Box style={{ padding: '0px 20px' }}>
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>

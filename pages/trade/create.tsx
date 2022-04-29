@@ -2,15 +2,19 @@ import { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { Backdrop, Button, CircularProgress, Container, FormControl, TextField, Typography } from '@mui/material';
+import { Button, CircularProgress, Container, FormControl, IconButton, InputAdornment, MenuItem, Paper, Select, Stack, TextField, Typography } from '@mui/material';
 
 import { useMetaMask } from 'metamask-react';
 
-import { NavBar } from '@components';
+import { AssetData, NavBar, SelectTokenDialog } from '@components';
 
-import { Swap2pInterface, addressRegexp, ERC20Interface, swap2pAddress } from 'utils';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
+import { addressRegexp, mapApiAssetToAsset, contractType, allContractTypes, contractTypeToString, splitContractType, tokenTypePlaceholders } from 'utils';
 import { useSnackbar } from 'notistack';
-import { providers } from 'ethers';
+import { utils, BigNumber } from 'ethers';
+import axios from 'axios';
+import { handle } from 'contractHandlers';
 
 const CreateTradePage: NextPage = () => {
   const router = useRouter();
@@ -19,20 +23,29 @@ const CreateTradePage: NextPage = () => {
 
   const YOwnerDefault = '0x0000000000000000000000000000000000000000';
   const [XAssetAddress, setXAssetAddress] = useState('');
-  const [XAmount, setXAmount] = useState('');
-  const [YOwner, setYOwner] = useState('');
+  const [XAmountOrId, setXAmount] = useState('');
   const [YAssetAddress, setYAssetAddress] = useState('');
-  const [YAmount, setYAmount] = useState('');
+  const [YAmountOrId, setYAmount] = useState('');
+  const [YOwner, setYOwner] = useState('');
 
+  const [contract, setContract] = useState<contractType>('20_20');
+  const [dialogXOpen, setDialogXOpen] = useState(false);
+  const [dialogYOpen, setDialogYOpen] = useState(false);
+  const [assets, setAssets] = useState([] as AssetData[]);
   const [buttonStatus, setButtonStatus] = useState<'create' | 'in_progress' | 'completed'>('create');
 
+  const [t1, t2] = splitContractType(contract);
+
   useEffect(() => {
+    if (!router.isReady || status !== 'connected') return;
+
     const {
       XAssetAddress: XAssetAddressQuery,
       XAmount: XAmountQuery,
       YOwner: YOwnerQuery,
       YAssetAddress: YAssetAddressQuery,
       YAmount: YAmountQuery,
+      contract: contractQuery,
     } = router.query;
 
     setXAssetAddress(XAssetAddressQuery as string ?? '');
@@ -40,64 +53,61 @@ const CreateTradePage: NextPage = () => {
     setYOwner(YOwnerQuery as string ?? '');
     setYAssetAddress(YAssetAddressQuery as string ?? '');
     setYAmount(YAmountQuery as string ?? '');
-  }, [router.isReady]);
+    setContract(contractQuery as contractType ?? '20_20');
+
+    const balancePromise = axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + `/api/balance?wallet=${account}`)
+      .then(({ data }) => {
+        setAssets(data.map(mapApiAssetToAsset));
+      })
+      .catch(() => {
+        enqueueSnackbar('Something went wrong :(', { variant: 'error' });
+      });
+  }, [router.isReady, status]);
 
   const XAssetAddressMatch = XAssetAddress.match(addressRegexp);
-  const YOwnerMatch = YOwner.length ? YOwner.match(addressRegexp) : true;
   const YAssetAddressMatch = YAssetAddress.match(addressRegexp);
+  const YOwnerMatch = YOwner.length ? YOwner.match(addressRegexp) : true;
 
-  const canCreate = Boolean(XAssetAddressMatch && XAmount !== null && YOwnerMatch && YAssetAddressMatch && YAmount !== null);
+  const canCreate = Boolean(
+    XAssetAddressMatch && XAmountOrId !== '' &&
+    YAssetAddressMatch && YAmountOrId !== '' && YOwnerMatch
+  );
 
+  const resetArgs = () => {
+    setXAssetAddress('');
+    setXAmount('');
+    setYAssetAddress('');
+    setYAmount('');
+    setYOwner('');
+  }
+
+  const handleSwapAssets = () => {
+    setXAssetAddress(YAssetAddress);
+    setXAmount(YAmountOrId);
+    setYAssetAddress(XAssetAddress);
+    setYAmount(XAmountOrId);
+  }
   const handleSubmit = async () => {
     try {
       setButtonStatus('in_progress');
 
-      const provider = new providers.Web3Provider(ethereum)
-      let tx;
+      const XAsset = assets.find(a => a.address.toLowerCase() === XAssetAddress.toLowerCase());
+      const YAsset = assets.find(a => a.address.toLowerCase() === YAssetAddress.toLowerCase());
+      const XArg = {
+        '20': (() => utils.parseUnits(XAmountOrId, XAsset?.decimals ?? 18)),
+        '721': (() => BigNumber.from(XAmountOrId)),
+      }[t1]();
+      const YArg = {
+        '20': (() => utils.parseUnits(YAmountOrId, YAsset?.decimals ?? 18)),
+        '721': (() => BigNumber.from(YAmountOrId)),
+      }[t2]();
 
-      const approveData = ERC20Interface.encodeFunctionData('approve', [swap2pAddress, XAmount]);
-      tx = await ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          to: XAssetAddress,
-          from: ethereum.selectedAddress,
-          chainId: chainId,
-          data: approveData,
-        }],
-      });
-
-      await provider.waitForTransaction(tx);
-
-      // get fee
-      const getFeeData = Swap2pInterface.encodeFunctionData('fee', []);
-      const feeData = await ethereum.request({
-        method: 'eth_call',
-        params: [{
-          to: swap2pAddress,
-          from: ethereum.selectedAddress,
-          chainId: chainId,
-          data: getFeeData,
-        }, 'latest'],
-      });
-
-      const [fee] = Swap2pInterface.decodeFunctionResult('fee', feeData);
-      const escrowData = Swap2pInterface.encodeFunctionData('createEscrow', [XAssetAddress, XAmount, YAssetAddress, YAmount, YOwner.length ? YOwner : YOwnerDefault]);
-      tx = await ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          to: swap2pAddress,
-          from: ethereum.selectedAddress,
-          chainId: chainId,
-          value: fee.toString(),
-          data: escrowData,
-        }],
-      });
-
-      await provider.waitForTransaction(tx);
+      await handle(contract, ethereum, chainId ?? '', [XAssetAddress, XArg, YAssetAddress, YArg, YOwner.length ? YOwner : YOwnerDefault]);
 
       setButtonStatus('completed');
     } catch (error) {
       setButtonStatus('create');
+      console.log(error)
       enqueueSnackbar('Something went wrong :(', { variant: 'error' });
     }
   };
@@ -112,79 +122,108 @@ const CreateTradePage: NextPage = () => {
 
       <NavBar />
 
-      <FormControl component='form' style={{ display: status === 'connected' ? 'flex' : 'none' }}>
-        <TextField
-          label='ChainId'
-          value={chainId ?? ''}
-          InputLabelProps={{
-            shrink: true,
-          }}
-          InputProps={{
-            readOnly: true,
-          }}
-        />
-        <TextField
-          label='XOwner'
-          value={account ?? ''}
-          InputLabelProps={{
-            shrink: true,
-          }}
-          InputProps={{
-            readOnly: true,
-          }}
-        />
-        <TextField
-          required
-          label='XAssetAddress'
-          value={XAssetAddress}
-          onChange={e => setXAssetAddress(e.target.value)}
-        />
-        <TextField
-          required
-          label='XAmount'
-          type="number"
-          value={XAmount}
-          onChange={e => setXAmount(e.target.value)}
-        />
-        <TextField
-          label='YOwner'
-          value={YOwner}
-          onChange={e => setYOwner(e.target.value)}
-        />
-        <TextField
-          required
-          label='YAssetAddress'
-          value={YAssetAddress}
-          onChange={e => setYAssetAddress(e.target.value)}
-        />
-        <TextField
-          required
-          label='YAmount'
-          type="number"
-          value={YAmount}
-          onChange={e => setYAmount(e.target.value)}
-        />
+      <Paper style={{ marginTop: '80px', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
+        <FormControl fullWidth component='form'>
+          <Stack direction='column'>
+            <Stack direction='row' justifyContent='space-between'>
+              <Typography variant='h4' align='center'><b>Create trade</b></Typography>
+              <Select
+                value={contract}
+                onChange={(e) => { resetArgs(); setContract(e.target.value as contractType); }}
+              >
+                {allContractTypes.map(t => (<MenuItem value={t} key={t}>{contractTypeToString(t)}</MenuItem>))}
+              </Select>
+            </Stack>
+            <Stack direction='column'>
+              <Paper elevation={3} style={{ padding: '20px 10px' }}>
+                <Stack direction='column'>
+                  <TextField
+                    required
+                    fullWidth
+                    placeholder={tokenTypePlaceholders[t1]}
+                    type='number'
+                    value={XAmountOrId}
+                    onChange={e => setXAmount(e.target.value)}
+                    InputProps={{
+                      autoComplete: 'off',
+                      endAdornment: <InputAdornment position='end'>
+                        <Button endIcon={<ArrowDropDownIcon />} onClick={() => setDialogXOpen(true)}>
+                          <Typography>{assets.find(a => a.address === XAssetAddress.toLowerCase())?.shortName ?? 'Select'}</Typography>
+                        </Button>
+                      </InputAdornment>
+                    }}
+                  />
+                </Stack>
+              </Paper>
+              <Paper elevation={5} style={{
+                margin: '-10px auto -30px auto',
+                padding: '0px',
+                zIndex: 200,
+                borderRadius: '10px',
+                height: '40px',
+                width: '40px',
+              }}>
+                <IconButton onClick={handleSwapAssets} disableRipple style={{ width: '40px', height: '40px' }}>
+                  <SwapVertIcon viewBox='-2 -2 28 28' style={{ fontSize: 40 }} />
+                </IconButton>
+              </Paper>
+              <Paper elevation={3} style={{ padding: '20px 10px' }}>
+                <Stack direction='column'>
+                  <TextField
+                    required
+                    fullWidth
+                    placeholder={tokenTypePlaceholders[t2]}
+                    type='number'
+                    value={YAmountOrId}
+                    onChange={e => setYAmount(e.target.value)}
+                    InputProps={{
+                      autoComplete: 'off',
+                      endAdornment: <InputAdornment position='end'>
+                        <Button endIcon={<ArrowDropDownIcon />} onClick={() => setDialogYOpen(true)}>
+                          <Typography>{assets.find(a => a.address === YAssetAddress.toLowerCase())?.shortName ?? 'Select'}</Typography>
+                        </Button>
+                      </InputAdornment>
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    placeholder='0x0000...0000'
+                    value={YOwner}
+                    onChange={e => setYOwner(e.target.value)}
+                  />
+                </Stack>
+              </Paper>
+            </Stack>
+            {
+              {
+                'create': <Button
+                  fullWidth
+                  disabled={!canCreate}
+                  onClick={handleSubmit}
+                ><Typography>Create</Typography></Button>,
+                'in_progress': <Button
+                  fullWidth
+                  disabled
+                  startIcon={<CircularProgress />}
+                >
+                  In progress...
+                </Button>,
+                'completed': <Button
+                  fullWidth
+                  disabled
+                >
+                  Done!
+                </Button>,
+              }[buttonStatus]
+            }
+          </Stack>
+        </FormControl>
+      </Paper>
 
-        {
-          {
-            'create': <Button
-              disabled={!canCreate}
-              onClick={handleSubmit}
-            ><Typography>Create</Typography></Button>,
-            'in_progress': <Button
-              disabled
-              startIcon={<CircularProgress />}
-            >
-              In progress...
-            </Button>,
-            'completed': <Button
-              disabled
-            >
-              Done!
-            </Button>,
-          }[buttonStatus]
-        }
-      </FormControl>
+      <SelectTokenDialog open={dialogXOpen} close={() => setDialogXOpen(false)} assets={t1 === '20' ? assets : []} tokenSetter={setXAssetAddress} />
+      <SelectTokenDialog open={dialogYOpen} close={() => setDialogYOpen(false)} assets={t2 === '20' ? assets : []} tokenSetter={setYAssetAddress} />
+
+      <footer />
     </Container>
   );
 };

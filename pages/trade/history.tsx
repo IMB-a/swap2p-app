@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import axios from 'axios';
-import { Backdrop, CircularProgress, Container } from '@mui/material';
+import { Backdrop, Box, CircularProgress, Container } from '@mui/material';
 
 import { useMetaMask } from 'metamask-react';
 
 import { EscrowData, EscrowTable, NavBar } from '@components';
 
-import { mapApiEscrowToEscrow } from 'utils';
+import { ApiTradesResponse, mapApiEscrowToEscrow } from 'utils';
 import { useSnackbar } from 'notistack';
 
 const TradeHistoryPage: NextPage = () => {
@@ -16,6 +16,7 @@ const TradeHistoryPage: NextPage = () => {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
   const [openBackdrop, setOpenBackdrop] = useState(false);
+  const [maxEscrows, setMaxEscrows] = useState(0);
   const [escrows, setEscrows] = useState([] as EscrowData[]);
 
   useEffect(() => {
@@ -26,8 +27,9 @@ const TradeHistoryPage: NextPage = () => {
 
     setOpenBackdrop(true);
     const getEscrowsPromise = axios.get(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + '/api/trades?offset=0&limit=10&tradeClosed=true')
-      .then(({ data }) => {
-        setEscrows(data.map(mapApiEscrowToEscrow));
+      .then(({ data }: { data: ApiTradesResponse }) => {
+        setMaxEscrows(data.pagination.total);
+        setEscrows(data.trades.map(mapApiEscrowToEscrow));
         setOpenBackdrop(false);
       })
       .catch((error) => {
@@ -55,9 +57,9 @@ const TradeHistoryPage: NextPage = () => {
 
       <NavBar />
 
-      <Container style={{ display: status === 'connected' ? 'flex' : 'none' }}>
-        <EscrowTable escrows={escrows} setters={{ setEscrows, setOpenBackdrop }} />
-      </Container>
+      <Box style={{ display: status === 'connected' ? 'flex' : 'none' }}>
+        <EscrowTable maxEscrows={maxEscrows} tradeClosed={true} escrows={escrows} setters={{ setEscrows, setOpenBackdrop }} />
+      </Box>
     </Container>
   );
 }

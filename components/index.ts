@@ -6,3 +6,5 @@ export * from './EscrowRow';
 export * from './EscrowTable';
 
 export * from './NavBar';
+
+export * from './SelectTokenDialog';
