@@ -1,5 +1,5 @@
 import { BigNumber, providers } from 'ethers';
-import { contractType, ercInterfaces, swap2pAddresses, splitContractType, swap2pInterfaces } from 'utils';
+import { contractType, ercInterfaces, swap2pAddresses, splitContractType, swap2pInterfaces, sppTokenAddress } from 'utils';
 
 export type ContractArgs = [string, BigNumber, string, BigNumber, string];
 export type Handler = (contract: contractType, ethereum: any, chainId: string, args: ContractArgs) => void;
@@ -13,19 +13,6 @@ export const handle: Handler = async (contract, ethereum, chainId, [XAssetAddres
     const swap2pAddress = swap2pAddresses[contract];
     const swap2pInterface = swap2pInterfaces[contract];
 
-    const approveData = ercInterface.encodeFunctionData('approve', [swap2pAddress, XAmountOrId]);
-    tx = await ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-            to: XAssetAddress,
-            from: ethereum.selectedAddress,
-            chainId: chainId,
-            data: approveData,
-        }],
-    });
-
-    await provider.waitForTransaction(tx);
-
     // get fee
     const getFeeData = swap2pInterface.encodeFunctionData('fee', []);
     const feeData = await ethereum.request({
@@ -37,8 +24,35 @@ export const handle: Handler = async (contract, ethereum, chainId, [XAssetAddres
             data: getFeeData,
         }, 'latest'],
     });
-
     const [fee] = swap2pInterface.decodeFunctionResult('fee', feeData);
+
+    console.log(fee);
+    const approveSPPData = ercInterface.encodeFunctionData('approve', [swap2pAddress, fee]);
+    tx = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+            to: sppTokenAddress,
+            from: ethereum.selectedAddress,
+            chainId: chainId,
+            data: approveSPPData,
+        }],
+    });
+
+    await provider.waitForTransaction(tx);
+
+    const approveXData = ercInterface.encodeFunctionData('approve', [swap2pAddress, XAmountOrId]);
+    tx = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+            to: XAssetAddress,
+            from: ethereum.selectedAddress,
+            chainId: chainId,
+            data: approveXData,
+        }],
+    });
+
+    await provider.waitForTransaction(tx);
+
     const escrowData = swap2pInterface.encodeFunctionData(
         'createEscrow',
         [XAssetAddress, XAmountOrId, YAssetAddress, YAmountOrId, YOwner],
@@ -49,7 +63,6 @@ export const handle: Handler = async (contract, ethereum, chainId, [XAssetAddres
             to: swap2pAddress,
             from: ethereum.selectedAddress,
             chainId: chainId,
-            value: fee.toString(),
             data: escrowData,
         }],
     });

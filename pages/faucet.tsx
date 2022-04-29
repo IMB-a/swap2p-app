@@ -36,7 +36,7 @@ const Faucet: NextPage = () => {
 
   const handleGetXToken = () => faucetERC20('0x5a87f76aB89916aC92056E646cA93c25bbbb6D88');
   const handleGetYToken = () => faucetERC20('0x82e2379179Ba2583B8D2d21FdaDd852Ca8Fa1Be1');
-  const handleGetSPPToken = () => faucetERC20('0xadD10A46e330c0e261e4cC796D7491BCAff632Cb');
+  const handleGetSPPToken = () => faucetERC20('0x57a5ac17906491be6609cee8eab5730f67790717');
   const handleGetXNFT = () => faucetERC721('0x6ebD878E96093c6E881DA212720aD5Ca4F3172b5');
   const handleGetYNFT = () => faucetERC721('0xC4EeBde7F673d1257d4716E9D91B7A7F5F281B89');
 
@@ -62,7 +62,7 @@ const Faucet: NextPage = () => {
 
   const handleAddXToken = () => addTokenToMetamask('0x5a87f76aB89916aC92056E646cA93c25bbbb6D88', 'X');
   const handleAddYToken = () => addTokenToMetamask('0x82e2379179Ba2583B8D2d21FdaDd852Ca8Fa1Be1', 'Y');
-  const handleAddSPPToken = () => addTokenToMetamask('0xadD10A46e330c0e261e4cC796D7491BCAff632Cb', 'SPP');
+  const handleAddSPPToken = () => addTokenToMetamask('0x57a5ac17906491be6609cee8eab5730f67790717', 'SPP');
 
   return (
     <Container>
