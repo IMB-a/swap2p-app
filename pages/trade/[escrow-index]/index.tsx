@@ -8,13 +8,15 @@ import { useMetaMask } from 'metamask-react';
 
 import { Escrow, EscrowData, NavBar } from '@components';
 
-import { ERC20Interface, swap2p20_20Address, Swap2p20_20Interface } from 'utils';
+import { allContractTypes, contractType, ERC20Interface, swap2p20_20Address, Swap2p20_20Interface, swap2pAddresses, swap2pInterfaces } from 'utils';
 import { Box, Button, Container, Typography } from '@mui/material';
 import { BigNumber, providers } from 'ethers';
+import { useSnackbar } from 'notistack';
 
 const TradePage: NextPage = () => {
   const router = useRouter();
-  const { 'escrow-index': escrowIndex } = router.query;
+  const { enqueueSnackbar } = useSnackbar();
+  const { 'escrow-index': escrowIndex, escrowType } = router.query;
   const { status, connect, account, chainId, ethereum } = useMetaMask();
 
   const [escrowData, setEscrowData] = useState<EscrowData | null>(null);
@@ -30,18 +32,25 @@ const TradePage: NextPage = () => {
       return;
     }
 
-    const escrowGetData = Swap2p20_20Interface.encodeFunctionData('getEscrow', [escrowIndex]);
+    if (!allContractTypes.includes(escrowType as contractType)) {
+      enqueueSnackbar('Wrong contractType :(');
+      return;
+    }
+
+    const swap2pInterface = swap2pInterfaces[escrowType as contractType];
+    const swap2pAddress = swap2pAddresses[escrowType as contractType];
+    const escrowGetData = swap2pInterface.encodeFunctionData('getEscrow', [escrowIndex]);
     const getEscrowPromise = ethereum.request({
       method: 'eth_call',
       params: [{
-        to: swap2p20_20Address,
+        to: swap2pAddress,
         from: ethereum.selectedAddress,
         chainId: chainId,
         data: escrowGetData,
       }, 'latest'],
     }).then((data: string) => {
-      const [XOwner, XAssetAddress, XAmount, YOwner, YAssetAddress, YAmount, closed] = Swap2p20_20Interface.decodeFunctionResult('getEscrow', data)[0];
-      setEscrowData({ escrowIndex: BigNumber.from(escrowIndex), XOwner, XAssetAddress, XAmount, YOwner, YAssetAddress, YAmount, closed });
+      const [XOwner, XAssetAddress, XAmount, YOwner, YAssetAddress, YAmount, closed] = swap2pInterface.decodeFunctionResult('getEscrow', data)[0];
+      setEscrowData({ escrowIndex: BigNumber.from(escrowIndex), type: escrowType as contractType, XOwner, XAssetAddress, XAmount, YOwner, YAssetAddress, YAmount, closed });
     });
   }, [router.isReady, status]);
 
@@ -72,6 +81,10 @@ const TradePage: NextPage = () => {
         data: acceptData,
       }],
     });
+
+    await provider.waitForTransaction(tx);
+
+    router.reload();
   };
   const onCancelClick = async () => {
     const cancelData = Swap2p20_20Interface.encodeFunctionData('cancelEscrow', [escrowIndex]);

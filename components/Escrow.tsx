@@ -1,8 +1,10 @@
 import { Alert, Card, CardContent, CardHeader, Typography } from '@mui/material';
-import { BigNumber } from 'ethers';
+import { BigNumber, utils } from 'ethers';
+import { contractType, splitContractType } from 'utils';
 
 export interface EscrowData {
   escrowIndex: BigNumber;
+  type: contractType;
   XOwner: string;
   XAssetAddress: string;
   XAmount: BigNumber;
@@ -13,6 +15,26 @@ export interface EscrowData {
 }
 
 export const Escrow = ({ data }: { data: EscrowData }) => {
+  const [t1, t2] = splitContractType(data.type);
+
+  const XArg = {
+    '20': (() => utils.formatUnits(data.XAmount.toString(), 18)),
+    '721': (() => data.XAmount),
+  }[t1]();
+  const YArg = {
+    '20': (() => utils.formatUnits(data.YAmount.toString(), 18)),
+    '721': (() => data.YAmount),
+  }[t2]();
+
+  const XLabel = {
+    '20': 'Amount',
+    '721': 'ID',
+  }[t1];
+  const YLabel = {
+    '20': 'Amount',
+    '721': 'ID',
+  }[t2];
+
   return (
     <Card>
       <CardHeader style={{ backgroundColor: data.closed ? 'green' : 'cyan' }}>
@@ -27,8 +49,8 @@ export const Escrow = ({ data }: { data: EscrowData }) => {
             <Typography sx={{ mb: 1.5 }} color="text.secondary">Owner address</Typography>
             <Typography>{data.XAssetAddress}</Typography>
             <Typography sx={{ mb: 1.5 }} color="text.secondary">Asset address</Typography>
-            <Typography>{data.XAmount.toString()}</Typography>
-            <Typography sx={{ mb: 1.5 }} color="text.secondary">Amount</Typography>
+            <Typography>{XArg.toString()}</Typography>
+            <Typography sx={{ mb: 1.5 }} color="text.secondary">{XLabel}</Typography>
           </CardContent>
         </Card>
         <Card style={{ display: 'flex', flexDirection: 'column' }}>
@@ -37,8 +59,8 @@ export const Escrow = ({ data }: { data: EscrowData }) => {
             <Typography sx={{ mb: 1.5 }} color="text.secondary">Owner address</Typography>
             <Typography>{data.YAssetAddress}</Typography>
             <Typography sx={{ mb: 1.5 }} color="text.secondary">Asset address</Typography>
-            <Typography>{data.YAmount.toString()}</Typography>
-            <Typography sx={{ mb: 1.5 }} color="text.secondary">Amount</Typography>
+            <Typography>{YArg.toString()}</Typography>
+            <Typography sx={{ mb: 1.5 }} color="text.secondary">{YLabel}</Typography>
           </CardContent>
         </Card>
       </CardContent>

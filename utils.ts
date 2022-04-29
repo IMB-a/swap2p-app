@@ -72,6 +72,7 @@ export interface ApiPagination {
 }
 export interface ApiEscrow {
     id: number;
+    type: contractType;
     xAddress: string;
     xAsset: string;
     xAmount: string;
@@ -96,6 +97,7 @@ export interface ApiTradesResponse {
 
 export const mapApiEscrowToEscrow = (dto: ApiEscrow): EscrowData => ({
     escrowIndex: BigNumber.from(dto.id),
+    type: dto.type,
     XOwner: dto.xAddress.toLowerCase(),
     XAssetAddress: dto.xAsset,
     XAmount: BigNumber.from(dto.xAmount),

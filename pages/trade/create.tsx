@@ -107,7 +107,6 @@ const CreateTradePage: NextPage = () => {
       setButtonStatus('completed');
     } catch (error) {
       setButtonStatus('create');
-      console.log(error)
       enqueueSnackbar('Something went wrong :(', { variant: 'error' });
     }
   };
