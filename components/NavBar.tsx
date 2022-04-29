@@ -53,16 +53,16 @@ export const NavBar = () => {
         </Menu>
         {
           {
-            'initializing': <Box style={{ padding: '0px 20px', marginRight: 'auto' }}>
+            'initializing': <Box style={{ padding: '0px 20px', marginLeft: 'auto' }}>
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
             </Box>,
-            'unavailable': <Box style={{ padding: '0px 20px', marginRight: 'auto' }}>
+            'unavailable': <Box style={{ padding: '0px 20px', marginLeft: 'auto' }}>
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
             </Box>,
-            'notConnected': <Box style={{ padding: '0px 20px', marginRight: 'auto' }} display='flex'>
+            'notConnected': <Box style={{ padding: '0px 20px', marginLeft: 'auto' }} display='flex'>
               <Button onClick={connect}><Typography variant='h6'>Connect to MetaMask</Typography></Button>
             </Box>,
-            'connecting': <Box style={{ padding: '0px 20px', marginRight: 'auto' }}>
+            'connecting': <Box style={{ padding: '0px 20px', marginLeft: 'auto' }}>
               <Typography gutterBottom variant='h5' component='div'>{status}</Typography>
             </Box>,
             'connected': <Box style={{ padding: '0px 20px', marginLeft: 'auto' }}>
